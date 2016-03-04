@@ -1,2 +1,8 @@
-gisimport:
-    build: .
+version: '2'
+services:
+  gisimport:
+    build:
+      context: .
+      dockerfile: Dockerfile_dev
+    ports:
+      - "8080:8080"
