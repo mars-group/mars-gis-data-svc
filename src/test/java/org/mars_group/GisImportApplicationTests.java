@@ -7,9 +7,9 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = MarsGisImportApplication.class)
+@SpringApplicationConfiguration(classes = GisImportApplication.class)
 @WebAppConfiguration
-public class MarsGisImportApplicationTests {
+public class GisImportApplicationTests {
 
 	@Test
 	public void contextLoads() {

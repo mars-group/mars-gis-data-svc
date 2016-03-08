@@ -6,10 +6,9 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 
 @SpringBootApplication
 //@EnableEurekaClient
-public class MarsGisImportApplication {
+public class GisImportApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(MarsGisImportApplication.class, args);
-    }
-
+	public static void main(String[] args) {
+		SpringApplication.run(GisImportApplication.class, args);
+	}
 }

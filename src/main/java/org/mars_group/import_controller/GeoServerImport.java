@@ -4,6 +4,9 @@ package org.mars_group.import_controller;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import it.geosolutions.geoserver.rest.GeoServerRESTReader;
 import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
+import org.geotools.coverage.grid.io.AbstractGridFormat;
+import org.geotools.coverage.grid.io.GridCoverage2DReader;
+import org.geotools.coverage.grid.io.GridFormatFinder;
 
 import java.io.File;
 import java.io.FileNotFoundException;
