@@ -1,8 +1,6 @@
 version: '2'
 services:
   gisimport:
-    build:
-      context: .
-      dockerfile: Dockerfile_dev
+    build: .
     ports:
       - "8181:8080"

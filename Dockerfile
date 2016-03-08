@@ -1,10 +1,7 @@
-FROM artifactory.mars.haw-hamburg.de:5000/maven:3.3.3-jdk-8
+FROM artifactory.mars.haw-hamburg.de:5000/java:8
 
-COPY [".", "/gisimport"]
-WORKDIR /gisimport
-RUN mvn -Dmaven.test.skip=true install
-RUN cp target/gis-import-0.0.1-SNAPSHOT.jar /app.jar
-RUN rm -rf /gisimport
+ADD target/gis-import-0.0.1-SNAPSHOT.jar app.jar
+RUN bash -c 'touch /app.jar'
 
 EXPOSE 8080
 
