@@ -19,8 +19,8 @@ public class GeoServerImport {
 
     public GeoServerImport() {
 
-        final String RESTURL = "http://192.168.99.100:8080/geoserver";
-//        final String RESTURL = "http://dock-one.mars.haw-hamburg.de:8080/geoserver";
+//        final String RESTURL = "http://192.168.99.100:8080/geoserver";
+        final String RESTURL = "http://dock-one.mars.haw-hamburg.de:8080/geoserver";
         final String RESTUSER = "admin";
         final String RESTPW = "geoserver";
 
