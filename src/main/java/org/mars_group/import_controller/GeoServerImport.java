@@ -1,4 +1,4 @@
-package org.mars_group.upload;
+package org.mars_group.import_controller;
 
 
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
@@ -56,7 +56,9 @@ public class GeoServerImport {
         boolean result = false;
 
         try {
-            result = publisher.publishGeoTIFF("myWorkspace", "myStore", file);
+            result = publisher.publishGeoTIFF("myWorkspace", datasetName, datasetName, file, "EPSG:4326",
+                    GSResourceEncoder.ProjectionPolicy.REPROJECT_TO_DECLARED, "default_point", null);
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             error = "File not found!";

@@ -1,4 +1,4 @@
-package org.mars_group.upload;
+package org.mars_group.import_controller;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
