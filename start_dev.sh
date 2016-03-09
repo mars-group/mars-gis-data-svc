@@ -6,6 +6,6 @@
 mvn package
 docker-compose -f docker-compose_dev.yml build
 cd ../marscloudinanutshell
-docker-compose -f new_import_websuite_development.yml stop gisimport
-docker-compose -f new_import_websuite_development.yml rm -f gisimport
-docker-compose -f new_import_websuite_development.yml up gisimport
+docker-compose -f develop.yml stop gisimport
+docker-compose -f develop.yml rm -f gisimport
+docker-compose -f develop.yml up gisimport
