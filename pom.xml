@@ -5,7 +5,7 @@
 
     <groupId>org.mars_group</groupId>
     <artifactId>gis-import</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.${bambooBuildNumber}</version>
     <packaging>jar</packaging>
 
     <name>gis-import</name>
