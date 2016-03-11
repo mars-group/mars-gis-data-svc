@@ -22,7 +22,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
         <geotools.version>14.2</geotools.version>
-        <geoserver-manager.version>1.6.0</geoserver-manager.version>
     </properties>
 
     <dependencies>
@@ -47,12 +46,18 @@
         <dependency>
             <groupId>it.geosolutions</groupId>
             <artifactId>geoserver-manager</artifactId>
-            <version>${geoserver-manager.version}</version>
+            <version>1.6.0</version>
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-geotiff</artifactId>
             <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.haw-hamburg.mars.mars-group</groupId>
+            <artifactId>metadata-client</artifactId>
+            <classifier>jar-with-dependencies</classifier>
+            <version>0.0.11</version>
         </dependency>
     </dependencies>
 
@@ -60,8 +65,8 @@
         <dependencies>
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>Brixton.BUILD-SNAPSHOT</version>
+                <artifactId>spring-cloud-netflix</artifactId>
+                <version>1.0.7.RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -70,27 +75,6 @@
 
     <repositories>
         <repository>
-            <id>spring-snapshots</id>
-            <name>Spring Snapshots</name>
-            <url>https://repo.spring.io/snapshot</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>spring-milestones</id>
-            <name>Spring Milestones</name>
-            <url>https://repo.spring.io/milestone</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>maven2-repository.dev.java.net</id>
-            <name>Java.net repository</name>
-            <url>http://download.java.net/maven/2</url>
-        </repository>
-        <repository>
             <id>osgeo</id>
             <name>Open Source Geospatial Foundation Repository</name>
             <url>http://download.osgeo.org/webdav/geotools/</url>
@@ -98,6 +82,13 @@
         <repository>
             <id>GeoSolutions</id>
             <url>http://maven.geo-solutions.it/</url>
+        </repository>
+        <repository>
+            <id>local</id>
+            <url>https://artifactory.mars.haw-hamburg.de/artifactory/libs-release-local</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
 
