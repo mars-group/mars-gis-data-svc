@@ -1,6 +1,10 @@
 version: '2'
 services:
-  gisimport:
-    build: .
-    ports:
-      - "8181:8080"
+    gisimport:
+        build: .
+        volumes:
+            - "./target:/target"
+        ports:
+            - "8181:8080"
+        environment:
+            Geoserver: local

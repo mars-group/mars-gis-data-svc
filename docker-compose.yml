@@ -1,4 +1,6 @@
 version: '2'
 services:
-  gisimport:
-      build: .
+    gisimport:
+        build: .
+        environment:
+            Geoserver: remote
