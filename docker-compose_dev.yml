@@ -1,10 +1,13 @@
 version: '2'
 services:
     gisimport:
-        build: .
+        build:
+            context: .
+            dockerfile: Dockerfile_dev
         volumes:
             - "./target:/target"
         ports:
             - "8181:8080"
+            - "8000:8000"
         environment:
             Geoserver: local
