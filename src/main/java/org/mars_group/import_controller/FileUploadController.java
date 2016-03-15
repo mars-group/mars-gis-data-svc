@@ -29,20 +29,22 @@ public class FileUploadController {
     public String handleShpUpload(@RequestParam("file") MultipartFile file,
                                   @RequestParam("name") String name) {
 
-        String error = checkUpload(file, name);
+        String error = saveFile(file, name);
         if (error.length() > 0) {
             return error;
         }
 
         GeoServerImport gsImport = new GeoServerImport();
-        return gsImport.importShp(file.getOriginalFilename(), name);
+        String result = gsImport.importShp(file.getOriginalFilename(), name);
+
+        return result;
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/import/tif")
     public String handleTifUpload(@RequestParam("file") MultipartFile file,
                                   @RequestParam("name") String name) {
 
-        String error = checkUpload(file, name);
+        String error = saveFile(file, name);
         if (error.length() > 0) {
             return error;
         }
@@ -51,7 +53,7 @@ public class FileUploadController {
         return gsImport.importGeoTiff(file.getOriginalFilename(), name);
     }
 
-    private String checkUpload(MultipartFile file, String name) {
+    private String saveFile(MultipartFile file, String name) {
         if (!file.isEmpty()) {
             try {
                 // save file

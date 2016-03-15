@@ -4,9 +4,6 @@ package org.mars_group.import_controller;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import it.geosolutions.geoserver.rest.GeoServerRESTReader;
 import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
-import org.geotools.coverage.grid.io.AbstractGridFormat;
-import org.geotools.coverage.grid.io.GridCoverage2DReader;
-import org.geotools.coverage.grid.io.GridFormatFinder;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,17 +16,21 @@ public class GeoServerImport {
 
     public GeoServerImport() {
 
-//        final String RESTURL = "http://192.168.99.100:8080/geoserver";
-        final String RESTURL = "http://dock-one.mars.haw-hamburg.de:8080/geoserver";
+        String GEOSERVER_URL;
+        if(System.getenv("GEOSERVER") != null && System.getenv("GEOSERVER").equals("local")) {
+            GEOSERVER_URL = "http://192.168.99.100:8080/geoserver";
+        } else {
+            GEOSERVER_URL = "http://dock-two.mars.haw-hamburg.de:8080/geoserver";
+        }
         final String RESTUSER = "admin";
         final String RESTPW = "geoserver";
 
         try {
-            reader = new GeoServerRESTReader(RESTURL, RESTUSER, RESTPW);
+            reader = new GeoServerRESTReader(GEOSERVER_URL, RESTUSER, RESTPW);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-        publisher = new GeoServerRESTPublisher(RESTURL, RESTUSER, RESTPW);
+        publisher = new GeoServerRESTPublisher(GEOSERVER_URL, RESTUSER, RESTPW);
 
         if (!reader.getWorkspaceNames().contains("myWorkspace")) {
             publisher.createWorkspace("myWorkspace");

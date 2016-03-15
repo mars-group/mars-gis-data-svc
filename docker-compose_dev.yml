@@ -10,4 +10,4 @@ services:
             - "8181:8080"
             - "8000:8000"
         environment:
-            Geoserver: local
+            GEOSERVER: local
