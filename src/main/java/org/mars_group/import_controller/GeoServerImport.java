@@ -41,18 +41,18 @@ public class GeoServerImport {
     public String importShp(String zipFilename, String datasetName) {
         File file = new File(FileUploadController.uploadDir + "/" + zipFilename);
 
-        boolean result;
-        GisValidator gisValidator = new GisValidator();
-        try {
-            gisValidator.zipHasDirectory(file);
-        } catch (IOException e) {
-            e.printStackTrace();
+        GisValidator gisValidator = new GisValidator(file);
+
+        if (gisValidator.zipHasDirectory()) {
             file.delete();
             return "Directory not allowed inside Zip file!";
         }
 
+        String srs = gisValidator.getCoordinateReferenceSystem();
+
+        boolean result;
         try {
-            result = publisher.publishShp("myWorkspace", "myStore", datasetName, file, "EPSG:4326", "giant_polygon");
+            result = publisher.publishShp("myWorkspace", "myStore", datasetName, file, srs, "giant_polygon");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             file.delete();

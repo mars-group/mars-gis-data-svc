@@ -1,10 +1,8 @@
 spring:
   application:
-    name: gis-import
+    name: gisimport
 
 eureka:
-#  instance:
-#    prefer-ip-address: true
   client:
     serviceUrl:
       defaultZone: http://eureka:8080/eureka/v2/
