@@ -9,12 +9,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 
-public class GeoServerImport {
+class GeoServerImport {
 
     private GeoServerRESTReader reader;
     private GeoServerRESTPublisher publisher;
 
-    public GeoServerImport() {
+    GeoServerImport() {
 
         String GEOSERVER_URL;
         if (System.getenv("GEOSERVER") != null && System.getenv("GEOSERVER").equals("local")) {
@@ -37,7 +37,7 @@ public class GeoServerImport {
         }
     }
 
-    public String importShp(String zipFilename, String datasetName) {
+    String importShp(String zipFilename) {
         File file = new File(FileUploadController.uploadDir + "/" + zipFilename);
 
         GisValidator gisValidator = new GisValidator(file);
@@ -48,6 +48,7 @@ public class GeoServerImport {
         }
 
         String srs = gisValidator.getCoordinateReferenceSystem();
+        String datasetName = gisValidator.getDatasetName();
 
         boolean result;
         try {
@@ -61,7 +62,7 @@ public class GeoServerImport {
         return handleCallback(file, zipFilename, result);
     }
 
-    public String importGeoTiff(String zipFilename, String datasetName) {
+    String importGeoTiff(String zipFilename, String datasetName) {
         File file = new File(FileUploadController.uploadDir + "/" + zipFilename);
 
         boolean result;

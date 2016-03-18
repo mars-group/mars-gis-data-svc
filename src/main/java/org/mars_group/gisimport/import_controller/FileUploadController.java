@@ -1,17 +1,22 @@
 package org.mars_group.gisimport.import_controller;
 
+import de.haw_hamburg.mars.mars_group.core.ImportState;
+import de.haw_hamburg.mars.mars_group.core.ImportType;
+import de.haw_hamburg.mars.mars_group.core.Privacy;
+import de.haw_hamburg.mars.mars_group.metadataclient.MetadataClient;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.FileCopyUtils;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.UUID;
 
 
 @RestController
@@ -26,25 +31,42 @@ public class FileUploadController {
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/import/shp")
-    public String handleShpUpload(@RequestParam("file") MultipartFile file,
-                                  @RequestParam("name") String name) {
+    public @ResponseBody ResponseEntity<String> handleShpUpload(
+            @RequestParam("file") MultipartFile file, @RequestParam String privacy,
+            @RequestParam int projectId, @RequestParam int userId, @RequestParam String title,
+            @RequestParam(required = false) String description) {
 
-        String error = saveFile(file, name);
+        String error = saveFile(file);
         if (error.length() > 0) {
-            return error;
+            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        GeoServerImport gsImport = new GeoServerImport();
-        String result = gsImport.importShp(file.getOriginalFilename(), name);
+        String importId = UUID.randomUUID().toString();
+        MetadataClient metadataClient = MetadataClient.getInstance(new RestTemplate(), "http://metadata:4444");
 
-        return result;
+        Privacy privacyType = Privacy.valueOf(privacy);
+
+        boolean initMetaDataSucceeded = metadataClient.initMetaData(importId, projectId, userId, privacyType, 42.0, 23.0,
+                ImportType.GIS, title, description);
+        if (!initMetaDataSucceeded) {
+            System.out.println(importId + " Metadata creation failed");
+        }
+
+        metadataClient.setState(importId, ImportState.PROCESSING);
+
+        GeoServerImport gsImport = new GeoServerImport();
+        String result = gsImport.importShp(file.getOriginalFilename());
+
+        metadataClient.setState(importId, ImportState.FINISHED);
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/import/tif")
     public String handleTifUpload(@RequestParam("file") MultipartFile file,
                                   @RequestParam("name") String name) {
 
-        String error = saveFile(file, name);
+        String error = saveFile(file);
         if (error.length() > 0) {
             return error;
         }
@@ -53,7 +75,7 @@ public class FileUploadController {
         return gsImport.importGeoTiff(file.getOriginalFilename(), name);
     }
 
-    private String saveFile(MultipartFile file, String name) {
+    private String saveFile(MultipartFile file) {
         if (!file.isEmpty()) {
             try {
                 // save file
@@ -65,10 +87,10 @@ public class FileUploadController {
                 return "";
 
             } catch (Exception e) {
-                return "You failed to upload " + name + " => " + e.getMessage();
+                return "You failed to upload " + file.getOriginalFilename() + " => " + e.getMessage();
             }
         } else {
-            return "You failed to upload " + name + " because the file was empty";
+            return "You failed to upload " + file.getOriginalFilename() + " because the file was empty";
         }
 
     }

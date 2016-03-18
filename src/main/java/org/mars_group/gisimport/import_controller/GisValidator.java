@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-public class GisValidator {
+class GisValidator {
     private File file;
 
     public GisValidator() {
@@ -26,12 +26,12 @@ public class GisValidator {
         System.out.println(getCoordinateReferenceSystem());
     }
 
-    public GisValidator(File file) {
+    GisValidator(File file) {
         this.file = file;
     }
 
     // GeoServer can not handle directories
-    public boolean zipHasDirectory() {
+    boolean zipHasDirectory() {
         ZipFile zipFile = null;
         try {
             zipFile = new ZipFile(file);
@@ -52,35 +52,42 @@ public class GisValidator {
         return false;
     }
 
-    public String getCoordinateReferenceSystem() {
+    String getCoordinateReferenceSystem() {
         System.out.println("getCoordinateReferenceSystem()");
 
-        Map<String, Object> map = new HashMap<>();
+//        Map<String, Object> map = new HashMap<>();
+//
+//
+//        try {
+//            map.put("url", file.toURI().toURL());
+//
+//            DataStore dataStore = DataStoreFinder.getDataStore(map);
+//            String typeName = dataStore.getTypeNames()[0];
+//
+//            FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(typeName);
+//            Filter filter = Filter.INCLUDE; // ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
+//
+//            FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures(filter);
+//            try (FeatureIterator<SimpleFeature> features = collection.features()) {
+//                while (features.hasNext()) {
+//                    SimpleFeature feature = features.next();
+//                    System.out.print(feature.getID());
+//                    System.out.print(": ");
+//                    System.out.println(feature.getDefaultGeometryProperty().getValue());
+//                }
+//            }
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
-
-        try {
-            map.put("url", file.toURI().toURL());
-
-            DataStore dataStore = DataStoreFinder.getDataStore(map);
-            String typeName = dataStore.getTypeNames()[0];
-
-            FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(typeName);
-            Filter filter = Filter.INCLUDE; // ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
-
-            FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures(filter);
-            try (FeatureIterator<SimpleFeature> features = collection.features()) {
-                while (features.hasNext()) {
-                    SimpleFeature feature = features.next();
-                    System.out.print(feature.getID());
-                    System.out.print(": ");
-                    System.out.println(feature.getDefaultGeometryProperty().getValue());
-                }
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // TODO: fixme
         return "EPSG:4326";
+    }
+
+    String getDatasetName() {
+        // TODO: implement
+        return "TM_WORLD_BORDERS";
     }
 
 }

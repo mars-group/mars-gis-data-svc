@@ -57,6 +57,11 @@
             <artifactId>gt-shapefile</artifactId>
             <version>${geotools.version}</version>
         </dependency>
+        <dependency>
+            <groupId>de.haw-hamburg.mars.mars-group</groupId>
+            <artifactId>metadata-client</artifactId>
+            <version>0.0.11</version>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>
@@ -96,6 +101,13 @@
         <repository>
             <id>GeoSolutions</id>
             <url>http://maven.geo-solutions.it/</url>
+        </repository>
+        <repository>
+            <id>local</id>
+            <url>https://artifactory.mars.haw-hamburg.de/artifactory/libs-release-local</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
 
