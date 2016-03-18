@@ -1,4 +1,4 @@
-package org.mars_group.import_controller;
+package org.mars_group.gisimport.import_controller;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;

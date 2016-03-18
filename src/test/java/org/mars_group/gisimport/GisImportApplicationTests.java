@@ -1,4 +1,4 @@
-package org.mars_group;
+package org.mars_group.gisimport;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

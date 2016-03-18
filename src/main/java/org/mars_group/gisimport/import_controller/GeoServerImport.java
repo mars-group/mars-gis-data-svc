@@ -1,4 +1,4 @@
-package org.mars_group.import_controller;
+package org.mars_group.gisimport.import_controller;
 
 
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
@@ -7,7 +7,6 @@ import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.MalformedURLException;
 
 public class GeoServerImport {

@@ -1,4 +1,4 @@
-package org.mars_group;
+package org.mars_group.gisimport;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
