@@ -4,6 +4,7 @@ package org.mars_group.gisimport.import_controller;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import it.geosolutions.geoserver.rest.GeoServerRESTReader;
 import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
+import org.mars_group.gisimport.exceptions.GisValidationException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -40,14 +41,16 @@ class GeoServerImport {
     String importShp(String zipFilename) {
         File file = new File(FileUploadController.uploadDir + "/" + zipFilename);
 
-        GisValidator gisValidator = new GisValidator(file);
-
-        if (gisValidator.zipHasDirectory()) {
+        GisValidator gisValidator;
+        try {
+            gisValidator = new GisValidator(file.getAbsolutePath());
+        } catch (GisValidationException e) {
             file.delete();
+            e.printStackTrace();
             return "Directory not allowed inside Zip file!";
         }
 
-        String srs = gisValidator.getCoordinateReferenceSystem();
+        String srs = gisValidator.getSpatialReferenceSystem();
         String datasetName = gisValidator.getDatasetName();
 
         boolean result;

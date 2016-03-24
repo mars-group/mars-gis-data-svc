@@ -1,40 +1,73 @@
 package org.mars_group.gisimport.import_controller;
 
+import org.apache.commons.io.FilenameUtils;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureSource;
-import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.FeatureIterator;
+import org.mars_group.gisimport.exceptions.GisValidationException;
+import org.mars_group.gisimport.util.UnzipUtility;
+import org.mars_group.gisimport.util.ZipWriter;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.filter.Filter;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-class GisValidator {
-    private File file;
 
-    public GisValidator() {
-        file = new File("upload-dir/TM_WORLD_BORDERS.shp");
-        System.out.println(getCoordinateReferenceSystem());
-    }
+public class GisValidator {
+    private boolean zipHasDirectory;
+    private String datasetDirectoryPath;
+    private String datasetDirectoryName;
+    private String datasetName;
+    private String spatialReferenceSystem;
 
-    GisValidator(File file) {
-        this.file = file;
+    /**
+     * Validates your GIS file
+     * @param filename this has to be either .zip .shp or .asc
+     * @throws GisValidationException
+     */
+    public GisValidator(String filename) throws GisValidationException {
+        datasetDirectoryName = FilenameUtils.getBaseName(filename);
+        String fileExtension = FilenameUtils.getExtension(filename);
+
+        File file;
+        if (fileExtension.equalsIgnoreCase("zip")) {
+            zipHasDirectory = zipHasDirectory(filename);
+
+            datasetDirectoryPath = unzip(filename);
+            findDatasetName();
+            file = new File(datasetDirectoryPath + "/" + datasetName + ".shp");
+
+            if (zipHasDirectory) {
+                removeDirectoryFromZip();
+            }
+        } else if(fileExtension.equalsIgnoreCase("shp")) {
+            datasetDirectoryPath = FileUploadController.uploadDir;
+            findDatasetName();
+            file = new File(filename);
+
+            file = new File(datasetDirectoryPath + "/" + datasetName + ".shp");
+
+        } else if(fileExtension.equalsIgnoreCase("asc")) {
+            // TODO: implement
+            throw new GisValidationException("not implemented yet.");
+        } else {
+            throw new GisValidationException(fileExtension + " is not a supported file extention");
+        }
+
+        initGisFile(file);
     }
 
     // GeoServer can not handle directories
-    boolean zipHasDirectory() {
+    private boolean zipHasDirectory(String filename) {
         ZipFile zipFile = null;
         try {
-            zipFile = new ZipFile(file);
+            zipFile = new ZipFile(filename);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -52,42 +85,66 @@ class GisValidator {
         return false;
     }
 
-    String getCoordinateReferenceSystem() {
-        System.out.println("getCoordinateReferenceSystem()");
+    private String unzip(String filename) {
+        String unzipDirectory = FileUploadController.uploadDir;
 
-//        Map<String, Object> map = new HashMap<>();
-//
-//
-//        try {
-//            map.put("url", file.toURI().toURL());
-//
-//            DataStore dataStore = DataStoreFinder.getDataStore(map);
-//            String typeName = dataStore.getTypeNames()[0];
-//
-//            FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(typeName);
-//            Filter filter = Filter.INCLUDE; // ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
-//
-//            FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures(filter);
-//            try (FeatureIterator<SimpleFeature> features = collection.features()) {
-//                while (features.hasNext()) {
-//                    SimpleFeature feature = features.next();
-//                    System.out.print(feature.getID());
-//                    System.out.print(": ");
-//                    System.out.println(feature.getDefaultGeometryProperty().getValue());
-//                }
-//            }
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        if(!zipHasDirectory) {
+            unzipDirectory += "/" + datasetDirectoryName;
+        }
 
-        // TODO: fixme
-        return "EPSG:4326";
+        UnzipUtility unzipper = new UnzipUtility();
+        try {
+            unzipper.unzip(filename, unzipDirectory);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return unzipDirectory;
     }
 
-    String getDatasetName() {
-        // TODO: implement
-        return "TM_WORLD_BORDERS";
+    private void removeDirectoryFromZip() {
+        ZipWriter zw = new ZipWriter();
+        String path =  datasetDirectoryPath + "/" + datasetDirectoryName;
+        zw.createZip(path, path + ".zip");
+    }
+
+    private void findDatasetName() {
+        datasetName = datasetDirectoryName;
+        File folder = new File(datasetDirectoryPath);
+        File[] files = folder.listFiles();
+        if(files != null) {
+            for (File f : files) {
+                if (FilenameUtils.getExtension(f.getName()).equalsIgnoreCase("shp")) {
+                    datasetName = FilenameUtils.getBaseName(f.getName());
+                    break;
+                }
+            }
+        }
+    }
+
+    private void initGisFile(File file) {
+        Map<String, Object> map = new HashMap<>();
+
+        try {
+            map.put("url", file.toURI().toURL());
+
+            DataStore dataStore = DataStoreFinder.getDataStore(map);
+            datasetName = dataStore.getTypeNames()[0];
+
+            FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(datasetName);
+
+            spatialReferenceSystem = source.getInfo().getCRS().getCoordinateSystem().getName().getCode();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getDatasetName() {
+        return datasetName;
+    }
+
+    public String getSpatialReferenceSystem() {
+        return spatialReferenceSystem;
     }
 
 }
