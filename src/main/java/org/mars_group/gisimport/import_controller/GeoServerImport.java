@@ -5,18 +5,18 @@ import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import it.geosolutions.geoserver.rest.GeoServerRESTReader;
 import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
 import org.mars_group.gisimport.exceptions.GisValidationException;
+import org.mars_group.gisimport.util.UploadType;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 
-class GeoServerImport {
+public class GeoServerImport {
 
     private GeoServerRESTReader reader;
     private GeoServerRESTPublisher publisher;
 
-    GeoServerImport() {
-
+   public GeoServerImport() {
         String GEOSERVER_URL;
         if (System.getenv("GEOSERVER") != null && System.getenv("GEOSERVER").equals("local")) {
             GEOSERVER_URL = "http://192.168.99.100:8080/geoserver";
@@ -38,7 +38,7 @@ class GeoServerImport {
         }
     }
 
-    String importShp(String zipFilename) {
+    public String handleImport(String zipFilename, UploadType uploadType) {
         File file = new File(FileUploadController.uploadDir + "/" + zipFilename);
 
         GisValidator gisValidator;
@@ -47,49 +47,47 @@ class GeoServerImport {
         } catch (GisValidationException e) {
             file.delete();
             e.printStackTrace();
-            return "Directory not allowed inside Zip file!";
+            return e.getMessage();
         }
 
         String srs = gisValidator.getSpatialReferenceSystem();
+
+        String resultMessage = "";
+        // fallback to WGS_84
+        if(srs == null) {
+            resultMessage = "FALLBACK TO WGS 84";
+            srs = "EPSG:4326";
+        }
+
         String datasetName = gisValidator.getDatasetName();
 
-        boolean result;
+        boolean result = false;
         try {
-            result = publisher.publishShp("myWorkspace", "myStore", datasetName, file, srs, "giant_polygon");
+            switch (uploadType) {
+                case SHP:
+//                    result = publisher.publishShp("myWorkspace", "myStore", datasetName, file, srs, "giant_polygon");
+                    result = publisher.publishShp("myWorkspace", datasetName, datasetName, file);
+                    break;
+                case ASC:
+                    result = false;
+                    break;
+                case GEOTIFF:
+                    result = publisher.publishGeoTIFF("myWorkspace", datasetName, datasetName, file, srs,
+                            GSResourceEncoder.ProjectionPolicy.REPROJECT_TO_DECLARED, "default_point", null);
+                    break;
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             file.delete();
             return "File not found!";
         }
-
-        return handleCallback(file, zipFilename, result);
-    }
-
-    String importGeoTiff(String zipFilename, String datasetName) {
-        File file = new File(FileUploadController.uploadDir + "/" + zipFilename);
-
-        boolean result;
-        try {
-            result = publisher.publishGeoTIFF("myWorkspace", datasetName, datasetName, file, "EPSG:4326",
-                    GSResourceEncoder.ProjectionPolicy.REPROJECT_TO_DECLARED, "default_point", null);
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            file.delete();
-            return "File not found!";
-        }
-
-        return handleCallback(file, zipFilename, result);
-    }
-
-    private String handleCallback(File file, String zipFilename, boolean result) {
-        file.delete();
 
         if (result) {
-            return zipFilename + " was imported successfull!";
+            return zipFilename + " " + resultMessage + " Import successfull!";
         } else {
-            return "error inside the GeoServer!";
+            return zipFilename + " " + resultMessage + " error inside the GeoServer! Import failed";
         }
     }
+
 
 }
