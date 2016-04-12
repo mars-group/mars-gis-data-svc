@@ -6,9 +6,11 @@ import it.geosolutions.geoserver.rest.GeoServerRESTReader;
 import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
 import org.mars_group.gisimport.exceptions.GisValidationException;
 import org.mars_group.gisimport.util.UploadType;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.MalformedURLException;
 
 public class GeoServerImport {
@@ -16,13 +18,8 @@ public class GeoServerImport {
     private GeoServerRESTReader reader;
     private GeoServerRESTPublisher publisher;
 
-   public GeoServerImport() {
-        String GEOSERVER_URL;
-        if (System.getenv("GEOSERVER") != null && System.getenv("GEOSERVER").equals("local")) {
-            GEOSERVER_URL = "http://192.168.99.100:8080/geoserver";
-        } else {
-            GEOSERVER_URL = "http://dock-two.mars.haw-hamburg.de:8080/geoserver";
-        }
+   GeoServerImport() {
+        final String GEOSERVER_URL = "geoserver/geoserver";
         final String RESTUSER = "admin";
         final String RESTPW = "geoserver";
 
@@ -38,26 +35,23 @@ public class GeoServerImport {
         }
     }
 
-    public String handleImport(String zipFilename, UploadType uploadType) {
+    String handleImport(String zipFilename, UploadType uploadType) {
         File file = new File(FileUploadController.uploadDir + "/" + zipFilename);
 
         GisValidator gisValidator;
         try {
             gisValidator = new GisValidator(file.getAbsolutePath());
+            gisValidator.validate();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return e.getMessage();
         } catch (GisValidationException e) {
             file.delete();
             e.printStackTrace();
             return e.getMessage();
         }
 
-        String srs = gisValidator.getSpatialReferenceSystem();
-
-        String resultMessage = "";
-        // fallback to WGS_84
-        if(srs == null) {
-            resultMessage = "FALLBACK TO WGS 84";
-            srs = "EPSG:4326";
-        }
+        CoordinateReferenceSystem srs = gisValidator.getCoordinateReferenceSystem();
 
         String datasetName = gisValidator.getDatasetName();
 
@@ -72,7 +66,7 @@ public class GeoServerImport {
                     result = false;
                     break;
                 case GEOTIFF:
-                    result = publisher.publishGeoTIFF("myWorkspace", datasetName, datasetName, file, srs,
+                    result = publisher.publishGeoTIFF("myWorkspace", datasetName, datasetName, file, srs.toWKT(),
                             GSResourceEncoder.ProjectionPolicy.REPROJECT_TO_DECLARED, "default_point", null);
                     break;
             }
@@ -83,9 +77,9 @@ public class GeoServerImport {
         }
 
         if (result) {
-            return zipFilename + " " + resultMessage + " Import successfull!";
+            return zipFilename + " Import successfull!";
         } else {
-            return zipFilename + " " + resultMessage + " error inside the GeoServer! Import failed";
+            return zipFilename + " error inside the GeoServer! Import failed";
         }
     }
 

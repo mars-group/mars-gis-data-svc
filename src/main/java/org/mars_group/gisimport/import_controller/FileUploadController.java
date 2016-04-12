@@ -31,7 +31,7 @@ public class FileUploadController {
     public static final String uploadDir = "upload-dir";
 
     @ResponseBody
-    @RequestMapping(method = RequestMethod.POST, value = "/import/shp")
+    @RequestMapping(method = RequestMethod.POST, value = "/shp")
     public ResponseEntity<String> handleShpUpload(
             @RequestParam("file") MultipartFile file, @RequestParam String privacy,
             @RequestParam int projectId, @RequestParam int userId, @RequestParam String title,
@@ -40,7 +40,7 @@ public class FileUploadController {
         return startImport(file, privacy, projectId, userId, title, description, UploadType.SHP);
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "/import/asc")
+    @RequestMapping(method = RequestMethod.POST, value = "/asc")
     public ResponseEntity<String> handleAscUpload(
             @RequestParam("file") MultipartFile file, @RequestParam String privacy,
             @RequestParam int projectId, @RequestParam int userId, @RequestParam String title,
@@ -49,7 +49,7 @@ public class FileUploadController {
         return startImport(file, privacy, projectId, userId, title, description, UploadType.ASC);
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "/import/geotiff")
+    @RequestMapping(method = RequestMethod.POST, value = "/geotiff")
     public ResponseEntity<String> handleGeoTiffUpload(
             @RequestParam("file") MultipartFile file, @RequestParam String privacy,
             @RequestParam int projectId, @RequestParam int userId, @RequestParam String title,

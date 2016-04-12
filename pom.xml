@@ -30,6 +30,8 @@
             <artifactId>junit</artifactId>
             <version>4.12</version>
         </dependency>
+
+        <!-- Spring -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -47,6 +49,20 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-eureka</artifactId>
         </dependency>
+
+        <!-- MARS -->
+        <dependency>
+            <groupId>de.haw-hamburg.mars.mars-group</groupId>
+            <artifactId>metadata-client</artifactId>
+            <version>0.0.11</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>4.2.5.RELEASE</version>
+        </dependency>
+
+        <!-- Geo -->
         <dependency>
             <groupId>it.geosolutions</groupId>
             <artifactId>geoserver-manager</artifactId>
@@ -63,14 +79,9 @@
             <version>${geotools.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.haw-hamburg.mars.mars-group</groupId>
-            <artifactId>metadata-client</artifactId>
-            <version>0.0.11</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>4.2.5.RELEASE</version>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-epsg-hsql</artifactId>
+            <version>${geotools.version}</version>
         </dependency>
     </dependencies>
 
