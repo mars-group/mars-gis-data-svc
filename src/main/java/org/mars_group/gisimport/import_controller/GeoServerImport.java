@@ -4,6 +4,7 @@ package org.mars_group.gisimport.import_controller;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import it.geosolutions.geoserver.rest.GeoServerRESTReader;
 import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
+import org.geotools.referencing.CRS;
 import org.mars_group.gisimport.exceptions.GisValidationException;
 import org.mars_group.gisimport.util.UploadType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -13,13 +14,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
-public class GeoServerImport {
+class GeoServerImport {
 
     private GeoServerRESTReader reader;
     private GeoServerRESTPublisher publisher;
 
    GeoServerImport() {
-        final String GEOSERVER_URL = "geoserver/geoserver";
+        final String GEOSERVER_URL = "http://geoserver:8080/geoserver";
         final String RESTUSER = "admin";
         final String RESTPW = "geoserver";
 
@@ -51,7 +52,7 @@ public class GeoServerImport {
             return e.getMessage();
         }
 
-        CoordinateReferenceSystem srs = gisValidator.getCoordinateReferenceSystem();
+        CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
 
         String datasetName = gisValidator.getDatasetName();
 
@@ -59,14 +60,14 @@ public class GeoServerImport {
         try {
             switch (uploadType) {
                 case SHP:
-//                    result = publisher.publishShp("myWorkspace", "myStore", datasetName, file, srs, "giant_polygon");
+//                    result = publisher.publishShp("myWorkspace", "myStore", datasetName, file, crs.toWKT(), "giant_polygon");
                     result = publisher.publishShp("myWorkspace", datasetName, datasetName, file);
                     break;
                 case ASC:
                     result = false;
                     break;
                 case GEOTIFF:
-                    result = publisher.publishGeoTIFF("myWorkspace", datasetName, datasetName, file, srs.toWKT(),
+                    result = publisher.publishGeoTIFF("myWorkspace", datasetName, datasetName, file, crs.toWKT(),
                             GSResourceEncoder.ProjectionPolicy.REPROJECT_TO_DECLARED, "default_point", null);
                     break;
             }

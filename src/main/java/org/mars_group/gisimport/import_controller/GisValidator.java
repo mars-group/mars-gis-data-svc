@@ -73,7 +73,7 @@ class GisValidator {
 
     // GeoServer can not handle directories
     private boolean zipHasDirectory(String filename) throws IOException {
-        ZipFile zipFile = null;
+        ZipFile zipFile;
         zipFile = new ZipFile(filename);
 
         if (zipFile != null) {
