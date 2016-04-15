@@ -1,6 +1,5 @@
 package org.mars_group.gisimport.import_controller;
 
-import com.netflix.discovery.EurekaClient;
 import de.haw_hamburg.mars.mars_group.core.ImportState;
 import de.haw_hamburg.mars.mars_group.core.ImportType;
 import de.haw_hamburg.mars.mars_group.core.Privacy;
@@ -85,15 +84,13 @@ class FileUploadController {
             }
         }
 
-        String error = saveFile(file);
-        if (error.length() > 0) {
+        String saveFileError = saveFile(file);
+        if (saveFileError.length() > 0) {
             cleanUp();
-            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(saveFileError, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        String result;
 
         MetadataClient metadataClient = MetadataClient.getInstance(new RestTemplate(), "http://metadata:4444");
-
         String importId = UUID.randomUUID().toString();
         Privacy privacyType = Privacy.valueOf(privacy);
 
@@ -106,50 +103,38 @@ class FileUploadController {
             return new ResponseEntity<>(importId + " Metadata creation failed", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        switch (uploadType) {
-            case SHP:
-            case ASC:
-            case GEOTIFF:
-                metadataClient.setState(importId, ImportState.PROCESSING);
-                try {
-                    result = gsImport.handleImport(file.getOriginalFilename(), uploadType);
-                } catch (GisImportException e) {
-                    e.printStackTrace();
-                    return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                    return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-                }
-                metadataClient.setState(importId, ImportState.FINISHED);
-                break;
-            default:
-                metadataClient.setState(importId, ImportState.FAILED);
-                cleanUp();
-                return new ResponseEntity<>("unsupported file type!", HttpStatus.BAD_REQUEST);
+        metadataClient.setState(importId, ImportState.PROCESSING);
+
+        String result;
+        try {
+            result = gsImport.handleImport(file.getOriginalFilename(), uploadType);
+        } catch (GisImportException | MalformedURLException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+        metadataClient.setState(importId, ImportState.FINISHED);
+
         cleanUp();
+
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     private String saveFile(MultipartFile file) {
-        if (!file.isEmpty()) {
-            try {
-                // save file
-                BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(
-                        new File(uploadDir + "/" + file.getOriginalFilename())));
-                FileCopyUtils.copy(file.getInputStream(), stream);
-                stream.close();
-
-                return "";
-
-            } catch (Exception e) {
-                return "You failed to upload " + file.getOriginalFilename() + " => " + e.getMessage();
-            }
-        } else {
+        if (file.isEmpty()) {
             return "You failed to upload " + file.getOriginalFilename() + " because the file was empty";
         }
 
+        try {
+            // save file
+            BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(
+                    new File(uploadDir + "/" + file.getOriginalFilename())));
+            FileCopyUtils.copy(file.getInputStream(), stream);
+            stream.close();
+        } catch (Exception e) {
+            return "You failed to upload " + file.getOriginalFilename() + " => " + e.getMessage();
+        }
+        return "";
     }
 
     private void cleanUp() {

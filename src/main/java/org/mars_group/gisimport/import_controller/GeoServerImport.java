@@ -29,7 +29,7 @@ class GeoServerImport {
     private EurekaClient discoveryClient;
 
     private void initGeoserver() throws GisImportException, MalformedURLException {
-        String GEOSERVER_URI = getRandomGeoServerInstanceUri();
+        final String GEOSERVER_URI = getRandomGeoServerInstanceUri();
         final String RESTUSER = "admin";
         final String RESTPW = "geoserver";
 
