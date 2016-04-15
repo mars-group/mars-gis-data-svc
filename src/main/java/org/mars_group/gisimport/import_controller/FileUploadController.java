@@ -1,14 +1,14 @@
 package org.mars_group.gisimport.import_controller;
 
+import com.netflix.discovery.EurekaClient;
 import de.haw_hamburg.mars.mars_group.core.ImportState;
 import de.haw_hamburg.mars.mars_group.core.ImportType;
 import de.haw_hamburg.mars.mars_group.core.Privacy;
 import de.haw_hamburg.mars.mars_group.metadataclient.MetadataClient;
 import org.apache.commons.io.FileUtils;
+import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.util.UploadType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.FileCopyUtils;
@@ -20,46 +20,64 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.net.MalformedURLException;
 import java.util.UUID;
 
 
 @RestController
-public class FileUploadController {
+class FileUploadController {
 
-    public static final String uploadDir = "upload-dir";
+    static final String uploadDir = "upload-dir";
+
+    @Autowired
+    GeoServerImport gsImport;
 
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST, value = "/shp")
     public ResponseEntity<String> handleShpUpload(
-            @RequestParam("file") MultipartFile file, @RequestParam String privacy,
-            @RequestParam int projectId, @RequestParam int userId, @RequestParam String title,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam String privacy,
+            @RequestParam int projectId,
+            @RequestParam int userId,
+            @RequestParam String title,
             @RequestParam(required = false) String description) {
 
         return startImport(file, privacy, projectId, userId, title, description, UploadType.SHP);
     }
 
+    @ResponseBody
     @RequestMapping(method = RequestMethod.POST, value = "/asc")
     public ResponseEntity<String> handleAscUpload(
-            @RequestParam("file") MultipartFile file, @RequestParam String privacy,
-            @RequestParam int projectId, @RequestParam int userId, @RequestParam String title,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam String privacy,
+            @RequestParam int projectId,
+            @RequestParam int userId,
+            @RequestParam String title,
             @RequestParam(required = false) String description) {
 
         return startImport(file, privacy, projectId, userId, title, description, UploadType.ASC);
     }
 
+    @ResponseBody
     @RequestMapping(method = RequestMethod.POST, value = "/geotiff")
     public ResponseEntity<String> handleGeoTiffUpload(
-            @RequestParam("file") MultipartFile file, @RequestParam String privacy,
-            @RequestParam int projectId, @RequestParam int userId, @RequestParam String title,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam String privacy,
+            @RequestParam int projectId,
+            @RequestParam int userId,
+            @RequestParam String title,
             @RequestParam(required = false) String description) {
 
         return startImport(file, privacy, projectId, userId, title, description, UploadType.GEOTIFF);
     }
 
-    private ResponseEntity<String> startImport(MultipartFile file, String privacy, int projectId, int userId,
-                                               String title, String description, UploadType uploadType) {
+    private ResponseEntity<String> startImport(MultipartFile file,
+                                               String privacy,
+                                               int projectId,
+                                               int userId,
+                                               String title,
+                                               String description,
+                                               UploadType uploadType) {
 
         if (!new File(uploadDir).exists()) {
             if (!new File(uploadDir).mkdir()) {
@@ -88,14 +106,20 @@ public class FileUploadController {
             return new ResponseEntity<>(importId + " Metadata creation failed", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        GeoServerImport gsImport = new GeoServerImport();
-
         switch (uploadType) {
             case SHP:
             case ASC:
             case GEOTIFF:
                 metadataClient.setState(importId, ImportState.PROCESSING);
-                result = gsImport.handleImport(file.getOriginalFilename(), uploadType);
+                try {
+                    result = gsImport.handleImport(file.getOriginalFilename(), uploadType);
+                } catch (GisImportException e) {
+                    e.printStackTrace();
+                    return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                    return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+                }
                 metadataClient.setState(importId, ImportState.FINISHED);
                 break;
             default:
