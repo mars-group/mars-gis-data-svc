@@ -28,37 +28,6 @@ class GeoServerImport {
     @Autowired
     private EurekaClient discoveryClient;
 
-    private void initGeoserver() throws GisImportException, MalformedURLException {
-        final String GEOSERVER_URI = getRandomGeoServerInstanceUri();
-        final String RESTUSER = "admin";
-        final String RESTPW = "geoserver";
-
-        reader = new GeoServerRESTReader(GEOSERVER_URI, RESTUSER, RESTPW);
-        publisher = new GeoServerRESTPublisher(GEOSERVER_URI, RESTUSER, RESTPW);
-
-        if (!reader.getWorkspaceNames().contains("myWorkspace")) {
-            publisher.createWorkspace("myWorkspace");
-        }
-    }
-
-    private String getRandomGeoServerInstanceUri() throws GisImportException {
-        Application app = discoveryClient.getApplication("geoserver");
-        int numberOfInstances = app.getInstances().size();
-
-        if(numberOfInstances < 1) {
-            throw new GisImportException("No GeoServer Instance found!");
-        }
-
-        Random rnd = new Random();
-        int instanceIndex = rnd.nextInt(numberOfInstances);
-        String instanceId = app.getInstances().get(instanceIndex).getId();
-
-        String ip = app.getByInstanceId(instanceId).getIPAddr();
-        int port = app.getByInstanceId(instanceId).getPort();
-
-        return "http://" + ip + ":" + port + "/geoserver";
-    }
-
     String handleImport(String zipFilename, UploadType uploadType) throws GisImportException, MalformedURLException {
         initGeoserver();
 
@@ -110,5 +79,34 @@ class GeoServerImport {
         }
     }
 
+    private void initGeoserver() throws GisImportException, MalformedURLException {
+        final String GEOSERVER_URI = getRandomGeoServerInstanceUri();
+        final String RESTUSER = "admin";
+        final String RESTPW = "geoserver";
 
+        reader = new GeoServerRESTReader(GEOSERVER_URI, RESTUSER, RESTPW);
+        publisher = new GeoServerRESTPublisher(GEOSERVER_URI, RESTUSER, RESTPW);
+
+        if (!reader.getWorkspaceNames().contains("myWorkspace")) {
+            publisher.createWorkspace("myWorkspace");
+        }
+    }
+
+    private String getRandomGeoServerInstanceUri() throws GisImportException {
+        Application app = discoveryClient.getApplication("geoserver");
+        int numberOfInstances = app.getInstances().size();
+
+        if(numberOfInstances < 1) {
+            throw new GisImportException("No GeoServer Instance found!");
+        }
+
+        Random rnd = new Random();
+        int instanceIndex = rnd.nextInt(numberOfInstances);
+        String instanceId = app.getInstances().get(instanceIndex).getId();
+
+        String ip = app.getByInstanceId(instanceId).getIPAddr();
+        int port = app.getByInstanceId(instanceId).getPort();
+
+        return "http://" + ip + ":" + port + "/geoserver";
+    }
 }
