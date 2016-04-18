@@ -22,20 +22,19 @@ import java.util.Random;
 @Component
 class GeoServerImport {
 
-    private GeoServerRESTReader reader;
     private GeoServerRESTPublisher publisher;
 
     @Autowired
     private EurekaClient discoveryClient;
 
-    String handleImport(String zipFilename, UploadType uploadType) throws GisImportException, MalformedURLException {
+    String handleImport(String uploadDir, String zipFilename, UploadType uploadType) throws GisImportException, MalformedURLException {
         initGeoserver();
 
-        File file = new File(FileUploadController.uploadDir + "/" + zipFilename);
+        File file = new File(uploadDir + "/" + zipFilename);
 
         GisValidator gisValidator;
         try {
-            gisValidator = new GisValidator(file.getAbsolutePath());
+            gisValidator = new GisValidator(uploadDir, file.getAbsolutePath());
             gisValidator.validate();
         } catch (IOException e) {
             file.delete();
@@ -47,9 +46,10 @@ class GeoServerImport {
             return e.getMessage();
         }
 
+        String datasetName = gisValidator.getDatasetName();
         CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
 
-        String datasetName = gisValidator.getDatasetName();
+        System.out.println("crs: " + crs);
 
         boolean result = false;
         try {
@@ -59,7 +59,8 @@ class GeoServerImport {
                     result = publisher.publishShp("myWorkspace", datasetName, datasetName, file);
                     break;
                 case ASC:
-                    result = false;
+                    result = publisher.publishArcGrid("myWorkspace", datasetName, datasetName, file, crs.toWKT(),
+                            GSResourceEncoder.ProjectionPolicy.REPROJECT_TO_DECLARED, "default_point", null);
                     break;
                 case GEOTIFF:
                     result = publisher.publishGeoTIFF("myWorkspace", datasetName, datasetName, file, crs.toWKT(),
@@ -84,7 +85,7 @@ class GeoServerImport {
         final String RESTUSER = "admin";
         final String RESTPW = "geoserver";
 
-        reader = new GeoServerRESTReader(GEOSERVER_URI, RESTUSER, RESTPW);
+        GeoServerRESTReader reader = new GeoServerRESTReader(GEOSERVER_URI, RESTUSER, RESTPW);
         publisher = new GeoServerRESTPublisher(GEOSERVER_URI, RESTUSER, RESTPW);
 
         if (!reader.getWorkspaceNames().contains("myWorkspace")) {

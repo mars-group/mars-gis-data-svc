@@ -10,15 +10,16 @@ import java.io.IOException;
 import static org.junit.Assert.*;
 
 public class GisValidatorTest {
+    private final String uploadDir = "upload-dir";
 
     @Test
     public void shpConstructor() {
-        if (!new File(FileUploadController.uploadDir).exists()) {
-            new File(FileUploadController.uploadDir).mkdir();
+        if (!new File(uploadDir).exists()) {
+            new File(uploadDir).mkdir();
         }
         String filename = "src/test/resources/shapefile.zip";
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
-        GisValidator gisValidator = new GisValidator(filename);
+        GisValidator gisValidator = new GisValidator(uploadDir, filename);
 
         try {
             gisValidator.validate();
@@ -27,7 +28,7 @@ public class GisValidatorTest {
 
             assertTrue(gisValidator.getDatasetName().equals("pop_pnt"));
             gisValidator.cleanUp();
-            assertFalse(new File(FileUploadController.uploadDir).exists());
+            assertFalse(new File(uploadDir).exists());
 
         } catch (IOException | GisValidationException e) {
             e.printStackTrace();
@@ -36,13 +37,13 @@ public class GisValidatorTest {
 
     @Test
     public void arcGridConstructor() {
-        if (!new File(FileUploadController.uploadDir).exists()) {
-            new File(FileUploadController.uploadDir).mkdir();
+        if (!new File(uploadDir).exists()) {
+            new File(uploadDir).mkdir();
         }
 
         String filename = "src/test/resources/arcgrid.asc";
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
-        GisValidator gisValidator = new GisValidator(filename);
+        GisValidator gisValidator = new GisValidator(uploadDir, filename);
 
         try {
             gisValidator.validate();
@@ -50,7 +51,7 @@ public class GisValidatorTest {
             assertTrue(crs.getName().toString().equals("EPSG:WGS 84 / UTM zone 11N"));
 
             gisValidator.cleanUp();
-            assertFalse(new File(FileUploadController.uploadDir).exists());
+            assertFalse(new File(uploadDir).exists());
         } catch (IOException | GisValidationException e) {
             e.printStackTrace();
         }
@@ -58,13 +59,13 @@ public class GisValidatorTest {
 
     @Test
     public void geoTiffConstructor() {
-        if (!new File(FileUploadController.uploadDir).exists()) {
-            new File(FileUploadController.uploadDir).mkdir();
+        if (!new File(uploadDir).exists()) {
+            new File(uploadDir).mkdir();
         }
 
         String filename = "src/test/resources/geotiff.tif";
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
-        GisValidator gisValidator = new GisValidator(filename);
+        GisValidator gisValidator = new GisValidator(uploadDir, filename);
 
         try {
             gisValidator.validate();
@@ -72,7 +73,7 @@ public class GisValidatorTest {
             assertTrue(crs.getName().toString().equals("EPSG:NAD27 / UTM zone 13N"));
 
             gisValidator.cleanUp();
-            assertFalse(new File(FileUploadController.uploadDir).exists());
+            assertFalse(new File(uploadDir).exists());
         } catch (IOException | GisValidationException e) {
             e.printStackTrace();
         }

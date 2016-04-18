@@ -27,20 +27,23 @@ import java.util.zip.ZipFile;
 
 class GisValidator {
     private boolean zipHasDirectory;
+    private String uploadDir;
     private String filename;
     private String datasetDirectoryPath;
     private String datasetDirectoryName;
     private String datasetName;
     private CoordinateReferenceSystem coordinateReferenceSystem;
 
+
     /**
      * Validates your GIS file
      *
-     * @param filename this has to be either .zip .shp or .asc
-     * @throws GisValidationException
+     * @param uploadDir the upload directory
+     * @param filename  this has to be either .zip .shp or .asc
      */
-    GisValidator(String filename) {
+    GisValidator(String uploadDir, String filename) {
         this.filename = filename;
+        this.uploadDir = uploadDir;
     }
 
     void validate() throws GisValidationException, IOException {
@@ -76,22 +79,20 @@ class GisValidator {
         ZipFile zipFile;
         zipFile = new ZipFile(filename);
 
-        if (zipFile != null) {
-            Enumeration zipEntries = zipFile.entries();
+        Enumeration zipEntries = zipFile.entries();
 
-            while (zipEntries.hasMoreElements()) {
-                ZipEntry zip = (ZipEntry) zipEntries.nextElement();
-                if (zip.isDirectory() && !zip.getName().equals("__MACOSX/")) {
-                    System.out.println("Directory: " + zip.getName());
-                    return true;
-                }
+        while (zipEntries.hasMoreElements()) {
+            ZipEntry zip = (ZipEntry) zipEntries.nextElement();
+            if (zip.isDirectory() && !zip.getName().equals("__MACOSX/")) {
+                System.out.println("Directory: " + zip.getName());
+                return true;
             }
         }
         return false;
     }
 
     private String unzip(String filename) throws IOException {
-        String unzipDirectory = FileUploadController.uploadDir;
+        String unzipDirectory = uploadDir;
 
         if (!zipHasDirectory) {
             unzipDirectory += "/" + datasetDirectoryName;
@@ -156,7 +157,7 @@ class GisValidator {
     }
 
     void cleanUp() throws IOException {
-        FileUtils.deleteDirectory(new File(FileUploadController.uploadDir));
+        FileUtils.deleteDirectory(new File(uploadDir));
     }
 
     String getDatasetName() {
