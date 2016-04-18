@@ -124,7 +124,7 @@
     <orderEntry type="library" name="Maven: xpp3:xpp3_min:1.1.4c" level="project" />
     <orderEntry type="library" name="Maven: de.haw-hamburg.mars.mars-group:metadata-client:0.0.11" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-test:4.2.5.RELEASE" level="project" />
-    <orderEntry type="library" name="Maven: it.geosolutions:geoserver-manager:1.6.0" level="project" />
+    <orderEntry type="library" name="Maven: it.geosolutions:geoserver-manager:1.7.0" level="project" />
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.0.1" level="project" />
     <orderEntry type="library" name="Maven: commons-httpclient:commons-httpclient:3.1" level="project" />
     <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.2" level="project" />
