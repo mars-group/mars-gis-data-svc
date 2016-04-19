@@ -74,7 +74,7 @@
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
-            <artifactId>gt-coverage</artifactId>
+            <artifactId>gt-arcgrid</artifactId>
             <version>${geotools.version}</version>
         </dependency>
         <dependency>

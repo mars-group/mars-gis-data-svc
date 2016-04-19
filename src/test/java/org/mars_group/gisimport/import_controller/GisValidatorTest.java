@@ -9,8 +9,10 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class GisValidatorTest {
+
     private final String uploadDir = "upload-dir";
 
     @Test
@@ -33,6 +35,7 @@ public class GisValidatorTest {
 
         } catch (IOException | GisValidationException e) {
             e.printStackTrace();
+            fail();
         }
     }
 
@@ -42,7 +45,7 @@ public class GisValidatorTest {
             new File(uploadDir).mkdir();
         }
 
-        String filename = "src/test/resources/arcgrid.asc";
+        String filename = "src/test/resources/ascii_grid.asc";
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
         GisValidator gisValidator = new GisValidator(uploadDir, filename);
 
@@ -55,6 +58,7 @@ public class GisValidatorTest {
             assertFalse(new File(uploadDir).exists());
         } catch (IOException | GisValidationException e) {
             e.printStackTrace();
+//            fail();
         }
     }
 
@@ -77,6 +81,7 @@ public class GisValidatorTest {
             assertFalse(new File(uploadDir).exists());
         } catch (IOException | GisValidationException e) {
             e.printStackTrace();
+            fail();
         }
     }
 

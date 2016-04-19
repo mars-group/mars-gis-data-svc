@@ -51,11 +51,16 @@ class GeoServerImport {
         String datasetName = gisValidator.getDatasetName();
         CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
         String crsCode;
-        try {
-            crsCode = CRS.lookupIdentifier(crs, true);
-        } catch (FactoryException e) {
-            e.printStackTrace();
-            return e.getMessage();
+
+        if(crs == null) {
+            crsCode = "EPSG:4326";
+        } else {
+            try {
+                crsCode = CRS.lookupIdentifier(crs, true);
+            } catch (FactoryException e) {
+                e.printStackTrace();
+                return e.getMessage();
+            }
         }
 
         boolean result = false;

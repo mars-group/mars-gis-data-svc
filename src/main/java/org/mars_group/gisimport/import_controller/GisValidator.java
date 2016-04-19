@@ -9,6 +9,8 @@ import org.geotools.coverage.grid.io.GridFormatFinder;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureSource;
+import org.geotools.gce.arcgrid.ArcGridReader;
+import org.geotools.gce.geotiff.GeoTiffReader;
 import org.mars_group.gisimport.exceptions.GisValidationException;
 import org.mars_group.gisimport.util.UnzipUtility;
 import org.mars_group.gisimport.util.ZipWriter;
@@ -66,9 +68,16 @@ class GisValidator {
             // TODO: implement
             throw new GisValidationException(fileExtension + " not implemented yet.");
 
-        } else if (fileExtension.equalsIgnoreCase("asc") || fileExtension.equalsIgnoreCase("tif")) {
-            coordinateReferenceSystem = initRasterFile(new File(filename));
+        } else if (fileExtension.equalsIgnoreCase("asc")) {
+            System.out.println("filename: " + filename);
+
+//            coordinateReferenceSystem = initRasterFile(new ArcGridReader(filename));
             datasetName = datasetDirectoryName;
+
+        } else if(fileExtension.equalsIgnoreCase("tif")) {
+            coordinateReferenceSystem = initRasterFile(new GeoTiffReader(filename));
+            datasetName = datasetDirectoryName;
+
         } else {
             throw new GisValidationException(fileExtension + " is not a supported file extension!");
         }
@@ -145,12 +154,9 @@ class GisValidator {
     /**
      * reads the spatial reference
      *
-     * @param file input file
+     * @param reader Reader of the appropriate GIS format
      */
-    private CoordinateReferenceSystem initRasterFile(File file) throws IOException {
-        AbstractGridFormat format = GridFormatFinder.findFormat(file);
-        GridCoverage2DReader reader = format.getReader(file);
-
+    <T extends GridCoverage2DReader> CoordinateReferenceSystem initRasterFile(T reader) throws IOException {
         GridCoverage2D coverage = reader.read(null);
 
         return coverage.getCoordinateReferenceSystem2D();
