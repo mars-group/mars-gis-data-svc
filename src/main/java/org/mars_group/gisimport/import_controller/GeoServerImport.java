@@ -6,9 +6,11 @@ import com.netflix.discovery.shared.Application;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import it.geosolutions.geoserver.rest.GeoServerRESTReader;
 import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
+import org.geotools.referencing.CRS;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
 import org.mars_group.gisimport.util.UploadType;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -48,22 +50,26 @@ class GeoServerImport {
 
         String datasetName = gisValidator.getDatasetName();
         CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
-
-        System.out.println("crs: " + crs);
+        String crsCode;
+        try {
+            crsCode = CRS.lookupIdentifier(crs, true);
+        } catch (FactoryException e) {
+            e.printStackTrace();
+            return e.getMessage();
+        }
 
         boolean result = false;
         try {
             switch (uploadType) {
                 case SHP:
-//                    result = publisher.publishShp("myWorkspace", "myStore", datasetName, file, crs.toWKT(), "giant_polygon");
-                    result = publisher.publishShp("myWorkspace", datasetName, datasetName, file);
+                    result = publisher.publishShp("myWorkspace", "myStore", datasetName, file, crsCode, "default_point");
                     break;
                 case ASC:
-                    result = publisher.publishArcGrid("myWorkspace", datasetName, datasetName, file, crs.toWKT(),
+                    result = publisher.publishArcGrid("myWorkspace", datasetName, datasetName, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.REPROJECT_TO_DECLARED, "default_point", null);
                     break;
                 case GEOTIFF:
-                    result = publisher.publishGeoTIFF("myWorkspace", datasetName, datasetName, file, crs.toWKT(),
+                    result = publisher.publishGeoTIFF("myWorkspace", datasetName, datasetName, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.REPROJECT_TO_DECLARED, "default_point", null);
                     break;
             }

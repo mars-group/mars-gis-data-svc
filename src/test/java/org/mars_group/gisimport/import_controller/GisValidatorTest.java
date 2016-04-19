@@ -7,7 +7,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import java.io.File;
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class GisValidatorTest {
     private final String uploadDir = "upload-dir";
