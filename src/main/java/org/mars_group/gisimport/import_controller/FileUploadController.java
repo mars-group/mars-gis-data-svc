@@ -32,7 +32,7 @@ class FileUploadController {
     GeoServerImport gsImport;
 
     @ResponseBody
-    @RequestMapping(method = RequestMethod.POST, value = "/shp")
+    @RequestMapping(method = RequestMethod.POST, value = "/upload/shp")
     public ResponseEntity<String> handleShpUpload(
             @RequestParam("file") MultipartFile file,
             @RequestParam String privacy,
@@ -45,7 +45,7 @@ class FileUploadController {
     }
 
     @ResponseBody
-    @RequestMapping(method = RequestMethod.POST, value = "/asc")
+    @RequestMapping(method = RequestMethod.POST, value = "/upload/asc")
     public ResponseEntity<String> handleAscUpload(
             @RequestParam("file") MultipartFile file,
             @RequestParam String privacy,
@@ -58,7 +58,7 @@ class FileUploadController {
     }
 
     @ResponseBody
-    @RequestMapping(method = RequestMethod.POST, value = "/geotiff")
+    @RequestMapping(method = RequestMethod.POST, value = "/upload/geotiff")
     public ResponseEntity<String> handleGeoTiffUpload(
             @RequestParam("file") MultipartFile file,
             @RequestParam String privacy,

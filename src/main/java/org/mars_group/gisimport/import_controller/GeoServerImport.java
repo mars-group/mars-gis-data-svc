@@ -1,14 +1,12 @@
 package org.mars_group.gisimport.import_controller;
 
 
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
-import it.geosolutions.geoserver.rest.GeoServerRESTReader;
 import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
 import org.geotools.referencing.CRS;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
+import org.mars_group.gisimport.util.GeoServerInstance;
 import org.mars_group.gisimport.util.UploadType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -19,22 +17,18 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.Random;
 
 @Component
 class GeoServerImport {
 
-    private GeoServerRESTPublisher publisher;
-
     @Autowired
-    private EurekaClient discoveryClient;
+    GeoServerInstance geoServerInstance;
 
     String handleImport(String uploadDir, String zipFilename, UploadType uploadType) throws GisImportException, MalformedURLException {
-        initGeoserver();
 
         File file = new File(uploadDir + "/" + zipFilename);
-
         GisValidator gisValidator;
+
         try {
             gisValidator = new GisValidator(uploadDir, file.getAbsolutePath());
             gisValidator.validate();
@@ -48,7 +42,6 @@ class GeoServerImport {
             return e.getMessage();
         }
 
-        String datasetName = gisValidator.getDatasetName();
         CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
         String crsCode;
 
@@ -63,7 +56,10 @@ class GeoServerImport {
             }
         }
 
+        GeoServerRESTPublisher publisher = geoServerInstance.getPublisher();
+        String datasetName = gisValidator.getDatasetName();
         boolean result = false;
+
         try {
             switch (uploadType) {
                 case SHP:
@@ -91,34 +87,4 @@ class GeoServerImport {
         }
     }
 
-    private void initGeoserver() throws GisImportException, MalformedURLException {
-        final String GEOSERVER_URI = getRandomGeoServerInstanceUri();
-        final String RESTUSER = "admin";
-        final String RESTPW = "geoserver";
-
-        GeoServerRESTReader reader = new GeoServerRESTReader(GEOSERVER_URI, RESTUSER, RESTPW);
-        publisher = new GeoServerRESTPublisher(GEOSERVER_URI, RESTUSER, RESTPW);
-
-        if (!reader.getWorkspaceNames().contains("myWorkspace")) {
-            publisher.createWorkspace("myWorkspace");
-        }
-    }
-
-    private String getRandomGeoServerInstanceUri() throws GisImportException {
-        Application app = discoveryClient.getApplication("geoserver");
-        int numberOfInstances = app.getInstances().size();
-
-        if(numberOfInstances < 1) {
-            throw new GisImportException("No GeoServer Instance found!");
-        }
-
-        Random rnd = new Random();
-        int instanceIndex = rnd.nextInt(numberOfInstances);
-        String instanceId = app.getInstances().get(instanceIndex).getId();
-
-        String ip = app.getByInstanceId(instanceId).getIPAddr();
-        int port = app.getByInstanceId(instanceId).getPort();
-
-        return "http://" + ip + ":" + port + "/geoserver";
-    }
 }
