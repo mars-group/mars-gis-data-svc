@@ -24,22 +24,18 @@ class GeoServerImport {
     @Autowired
     GeoServerInstance geoServerInstance;
 
-    String handleImport(String uploadDir, String zipFilename, UploadType uploadType, String importId) throws GisImportException, MalformedURLException {
+    String handleImport(String uploadDir, String zipFilename, UploadType uploadType, String importId, String layername) throws GisImportException, MalformedURLException {
 
         File file = new File(uploadDir + "/" + zipFilename);
         GisValidator gisValidator;
 
         try {
-            gisValidator = new GisValidator(uploadDir, file.getAbsolutePath());
+            gisValidator = new GisValidator(uploadDir, file.getAbsolutePath(), uploadType);
             gisValidator.validate();
-        } catch (IOException e) {
+        } catch (IOException | GisValidationException e) {
             file.delete();
             e.printStackTrace();
-            return e.getMessage();
-        } catch (GisValidationException e) {
-            file.delete();
-            e.printStackTrace();
-            return e.getMessage();
+            throw new GisImportException(e.getMessage());
         }
 
         CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
@@ -52,40 +48,42 @@ class GeoServerImport {
                 crsCode = CRS.lookupIdentifier(crs, true);
             } catch (FactoryException e) {
                 e.printStackTrace();
-                return e.getMessage();
+                throw new GisImportException(e.getMessage());
             }
         }
 
-        GeoServerRESTPublisher publisher = geoServerInstance.getPublisher();
-        String datasetName = gisValidator.getDatasetName();
         boolean result = false;
-
+        GeoServerRESTPublisher publisher = geoServerInstance.getPublisher();
         publisher.createWorkspace(importId);
 
         try {
             switch (uploadType) {
                 case SHP:
-                    result = publisher.publishShp(importId, "Websuite_Shapefile", datasetName, file, crsCode, "default_point");
+                    result = publisher.publishShp(importId, "Websuite_Shapefile", gisValidator.getDatasetName(),
+                            file, crsCode, "default_point");
                     break;
                 case ASC:
-                    result = publisher.publishArcGrid(importId, "Websuite_Asc", datasetName, file, crsCode,
-                            GSResourceEncoder.ProjectionPolicy.REPROJECT_TO_DECLARED, "default_point", null);
+                    result = publisher.publishArcGrid(importId, "Websuite_Asc", layername, file, crsCode,
+                            GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
                     break;
                 case GEOTIFF:
-                    result = publisher.publishGeoTIFF(importId, "Websuite_GeoTiff", datasetName, file, crsCode,
-                            GSResourceEncoder.ProjectionPolicy.REPROJECT_TO_DECLARED, "default_point", null);
+                    result = publisher.publishGeoTIFF(importId, "Websuite_GeoTiff", layername, file, crsCode,
+                            GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
                     break;
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             file.delete();
-            return "File not found!";
+            publisher.removeWorkspace(importId, false);
+            throw new GisImportException(e.getMessage());
         }
 
         if (result) {
             return zipFilename + " Import successfull!";
         } else {
-            return zipFilename + " error inside the GeoServer! Import failed";
+            file.delete();
+            publisher.removeWorkspace(importId, false);
+            throw new GisImportException(zipFilename + ": error inside the GeoServer! Import failed");
         }
     }
 

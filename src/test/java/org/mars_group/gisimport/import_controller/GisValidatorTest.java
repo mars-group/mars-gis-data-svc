@@ -2,6 +2,7 @@ package org.mars_group.gisimport.import_controller;
 
 import org.junit.Test;
 import org.mars_group.gisimport.exceptions.GisValidationException;
+import org.mars_group.gisimport.util.UploadType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.File;
@@ -22,7 +23,7 @@ public class GisValidatorTest {
         }
         String filename = "src/test/resources/shapefile.zip";
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
-        GisValidator gisValidator = new GisValidator(uploadDir, filename);
+        GisValidator gisValidator = new GisValidator(uploadDir, filename, UploadType.SHP);
 
         try {
             gisValidator.validate();
@@ -47,7 +48,7 @@ public class GisValidatorTest {
 
         String filename = "src/test/resources/ascii_grid.asc";
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
-        GisValidator gisValidator = new GisValidator(uploadDir, filename);
+        GisValidator gisValidator = new GisValidator(uploadDir, filename, UploadType.ASC);
 
         try {
             gisValidator.validate();
@@ -70,7 +71,7 @@ public class GisValidatorTest {
 
         String filename = "src/test/resources/geotiff.tif";
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
-        GisValidator gisValidator = new GisValidator(uploadDir, filename);
+        GisValidator gisValidator = new GisValidator(uploadDir, filename, UploadType.GEOTIFF);
 
         try {
             gisValidator.validate();

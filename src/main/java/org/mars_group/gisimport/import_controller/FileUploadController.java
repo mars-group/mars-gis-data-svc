@@ -105,9 +105,9 @@ class FileUploadController {
 
         metadataClient.setState(importId, ImportState.PROCESSING);
 
-        String result;
         try {
-            result = gsImport.handleImport(uploadDir, file.getOriginalFilename(), uploadType, importId);
+            // START THE IMPORT
+            gsImport.handleImport(uploadDir, file.getOriginalFilename(), uploadType, importId, title);
         } catch (GisImportException | MalformedURLException e) {
             e.printStackTrace();
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

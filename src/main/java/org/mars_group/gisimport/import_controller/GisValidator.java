@@ -10,6 +10,7 @@ import org.geotools.data.FeatureSource;
 import org.geotools.gce.geotiff.GeoTiffReader;
 import org.mars_group.gisimport.exceptions.GisValidationException;
 import org.mars_group.gisimport.util.UnzipUtility;
+import org.mars_group.gisimport.util.UploadType;
 import org.mars_group.gisimport.util.ZipWriter;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -28,6 +29,7 @@ class GisValidator {
     private boolean zipHasDirectory;
     private String uploadDir;
     private String filename;
+    private UploadType uploadType;
     private String datasetDirectoryPath;
     private String datasetDirectoryName;
     private String datasetName;
@@ -40,9 +42,10 @@ class GisValidator {
      * @param uploadDir the upload directory
      * @param filename  this has to be either .zip .shp or .asc
      */
-    GisValidator(String uploadDir, String filename) {
+    GisValidator(String uploadDir, String filename, UploadType uploadType) {
         this.filename = filename;
         this.uploadDir = uploadDir;
+        this.uploadType = uploadType;
     }
 
     void validate() throws GisValidationException, IOException {
@@ -50,6 +53,9 @@ class GisValidator {
         String fileExtension = FilenameUtils.getExtension(filename);
 
         if (fileExtension.equalsIgnoreCase("zip")) {
+            if(!uploadType.equals(UploadType.SHP)) {
+                throw new GisValidationException("The file extension does not match the upload type!");
+            }
             zipHasDirectory = zipHasDirectory(filename);
 
             datasetDirectoryPath = unzip(filename);
@@ -62,16 +68,25 @@ class GisValidator {
             coordinateReferenceSystem = initShpFile(file);
 
         } else if (fileExtension.equalsIgnoreCase("shp")) {
+            if(!uploadType.equals(UploadType.SHP)) {
+                throw new GisValidationException("The file extension does not match the upload type!");
+            }
             // TODO: implement
             throw new GisValidationException(fileExtension + " not implemented yet.");
 
         } else if (fileExtension.equalsIgnoreCase("asc")) {
+            if(!uploadType.equals(UploadType.ASC)) {
+                throw new GisValidationException("The file extension does not match the upload type!");
+            }
             System.out.println("filename: " + filename);
 
 //            coordinateReferenceSystem = initRasterFile(new ArcGridReader(filename));
             datasetName = datasetDirectoryName;
 
         } else if(fileExtension.equalsIgnoreCase("tif")) {
+            if(!uploadType.equals(UploadType.GEOTIFF)) {
+                throw new GisValidationException("The file extension does not match the upload type!");
+            }
             coordinateReferenceSystem = initRasterFile(new GeoTiffReader(filename));
             datasetName = datasetDirectoryName;
 
