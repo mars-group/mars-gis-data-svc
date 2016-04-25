@@ -16,6 +16,7 @@ import java.util.Random;
 public class GeoServerInstance {
 
     private GeoServerRESTPublisher publisher;
+    private GeoServerRESTReader reader;
     private String URI;
     private final String USER = "admin";
     private final String PASSWORD = "geoserver";
@@ -26,12 +27,8 @@ public class GeoServerInstance {
     private void init() throws MalformedURLException, GisImportException {
         URI = getRandomGeoServerInstanceUri();
 
-        GeoServerRESTReader reader = new GeoServerRESTReader(URI, USER, PASSWORD);
+        reader = new GeoServerRESTReader(URI, USER, PASSWORD);
         publisher = new GeoServerRESTPublisher(URI, USER, PASSWORD);
-
-        if (!reader.getWorkspaceNames().contains("myWorkspace")) {
-            publisher.createWorkspace("myWorkspace");
-        }
     }
 
     private String getRandomGeoServerInstanceUri() throws GisImportException {
@@ -58,6 +55,13 @@ public class GeoServerInstance {
             init();
         }
         return publisher;
+    }
+
+    public GeoServerRESTReader getReader() throws MalformedURLException, GisImportException {
+        if (publisher == null) {
+            init();
+        }
+        return reader;
     }
 
     public String getUri() throws MalformedURLException, GisImportException {

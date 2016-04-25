@@ -24,7 +24,7 @@ class GeoServerImport {
     @Autowired
     GeoServerInstance geoServerInstance;
 
-    String handleImport(String uploadDir, String zipFilename, UploadType uploadType) throws GisImportException, MalformedURLException {
+    String handleImport(String uploadDir, String zipFilename, UploadType uploadType, String importId) throws GisImportException, MalformedURLException {
 
         File file = new File(uploadDir + "/" + zipFilename);
         GisValidator gisValidator;
@@ -60,17 +60,19 @@ class GeoServerImport {
         String datasetName = gisValidator.getDatasetName();
         boolean result = false;
 
+        publisher.createWorkspace(importId);
+
         try {
             switch (uploadType) {
                 case SHP:
-                    result = publisher.publishShp("myWorkspace", "myStore", datasetName, file, crsCode, "default_point");
+                    result = publisher.publishShp(importId, "Websuite_Shapefile", datasetName, file, crsCode, "default_point");
                     break;
                 case ASC:
-                    result = publisher.publishArcGrid("myWorkspace", datasetName, datasetName, file, crsCode,
+                    result = publisher.publishArcGrid(importId, "Websuite_Asc", datasetName, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.REPROJECT_TO_DECLARED, "default_point", null);
                     break;
                 case GEOTIFF:
-                    result = publisher.publishGeoTIFF("myWorkspace", datasetName, datasetName, file, crsCode,
+                    result = publisher.publishGeoTIFF(importId, "Websuite_GeoTiff", datasetName, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.REPROJECT_TO_DECLARED, "default_point", null);
                     break;
             }

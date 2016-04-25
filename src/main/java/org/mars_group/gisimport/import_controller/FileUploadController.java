@@ -107,7 +107,7 @@ class FileUploadController {
 
         String result;
         try {
-            result = gsImport.handleImport(uploadDir, file.getOriginalFilename(), uploadType);
+            result = gsImport.handleImport(uploadDir, file.getOriginalFilename(), uploadType, importId);
         } catch (GisImportException | MalformedURLException e) {
             e.printStackTrace();
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -117,7 +117,7 @@ class FileUploadController {
 
         cleanUp();
 
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        return new ResponseEntity<>(importId, HttpStatus.OK);
     }
 
     private String saveFile(MultipartFile file) {
