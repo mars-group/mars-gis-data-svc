@@ -24,9 +24,9 @@ class GeoServerImport {
     @Autowired
     GeoServerInstance geoServerInstance;
 
-    String handleImport(String uploadDir, String zipFilename, UploadType uploadType, String importId, String layername) throws GisImportException, MalformedURLException {
+    String handleImport(String uploadDir, String uploadFilename, UploadType uploadType, String importId, String layername) throws GisImportException, MalformedURLException {
 
-        File file = new File(uploadDir + "/" + zipFilename);
+        File file = new File(uploadDir + "/" + uploadFilename);
         GisValidator gisValidator;
 
         try {
@@ -63,7 +63,9 @@ class GeoServerImport {
                             file, crsCode, "default_point");
                     break;
                 case ASC:
-                    result = publisher.publishArcGrid(importId, "Websuite_Asc", layername, file, crsCode,
+                    // We converted the Ascii Grid to GeoTiff, so this imports Geotiff
+                    file = new File(uploadDir + "/" + "TEST.tif");
+                    result = publisher.publishGeoTIFF(importId, "Websuite_Asc", layername, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
                     break;
                 case GEOTIFF:
@@ -79,11 +81,11 @@ class GeoServerImport {
         }
 
         if (result) {
-            return zipFilename + " Import successfull!";
+            return uploadFilename + " Import successfull!";
         } else {
             file.delete();
             publisher.removeWorkspace(importId, false);
-            throw new GisImportException(zipFilename + ": error inside the GeoServer! Import failed");
+            throw new GisImportException(uploadFilename + ": error inside the GeoServer! Import failed");
         }
     }
 

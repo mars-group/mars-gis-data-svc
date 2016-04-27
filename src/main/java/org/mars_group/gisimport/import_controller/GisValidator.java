@@ -1,19 +1,23 @@
 package org.mars_group.gisimport.import_controller;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.io.GridCoverage2DReader;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureSource;
+import org.geotools.factory.Hints;
+import org.geotools.gce.arcgrid.ArcGridReader;
 import org.geotools.gce.geotiff.GeoTiffReader;
+import org.geotools.gce.geotiff.GeoTiffWriter;
+import org.geotools.referencing.CRS;
 import org.mars_group.gisimport.exceptions.GisValidationException;
 import org.mars_group.gisimport.util.UnzipUtility;
 import org.mars_group.gisimport.util.UploadType;
 import org.mars_group.gisimport.util.ZipWriter;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.File;
@@ -67,20 +71,28 @@ class GisValidator {
             File file = new File(datasetDirectoryPath + "/" + datasetName + ".shp");
             coordinateReferenceSystem = initShpFile(file);
 
-        } else if (fileExtension.equalsIgnoreCase("shp")) {
-            if(!uploadType.equals(UploadType.SHP)) {
-                throw new GisValidationException("The file extension does not match the upload type!");
-            }
-            // TODO: implement
-            throw new GisValidationException(fileExtension + " not implemented yet.");
-
         } else if (fileExtension.equalsIgnoreCase("asc")) {
             if(!uploadType.equals(UploadType.ASC)) {
                 throw new GisValidationException("The file extension does not match the upload type!");
             }
-            System.out.println("filename: " + filename);
 
-//            coordinateReferenceSystem = initRasterFile(new ArcGridReader(filename));
+            ArcGridReader reader;
+            try {
+                Hints hints = new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode("EPSG:27200"));
+                reader = new ArcGridReader(new File(filename), hints);
+            } catch (FactoryException e) {
+                e.printStackTrace();
+                throw new GisValidationException(e.getMessage());
+            }
+            GridCoverage2D coverage = reader.read(null);
+
+            System.out.println("Crs: " + coverage.getCoordinateReferenceSystem2D());
+            coordinateReferenceSystem = coverage.getCoordinateReferenceSystem2D();
+
+            GeoTiffWriter writer = new GeoTiffWriter(new File(uploadDir + File.separator + "TEST.tif"));
+            writer.write(coverage, null);
+            writer.dispose();
+
             datasetName = datasetDirectoryName;
 
         } else if(fileExtension.equalsIgnoreCase("tif")) {
@@ -160,7 +172,6 @@ class GisValidator {
         FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(datasetName);
 
         return source.getInfo().getCRS();
-
     }
 
     /**
@@ -168,7 +179,7 @@ class GisValidator {
      *
      * @param reader Reader of the appropriate GIS format
      */
-    <T extends GridCoverage2DReader> CoordinateReferenceSystem initRasterFile(T reader) throws IOException {
+    private <T extends GridCoverage2DReader> CoordinateReferenceSystem initRasterFile(T reader) throws IOException {
         GridCoverage2D coverage = reader.read(null);
 
         return coverage.getCoordinateReferenceSystem2D();
