@@ -48,7 +48,6 @@ class GeoServerImport {
             throw new GisImportException(e.getMessage());
         }
 
-
         boolean result = false;
         GeoServerRESTPublisher publisher = geoServerInstance.getPublisher();
         publisher.createWorkspace(importId);

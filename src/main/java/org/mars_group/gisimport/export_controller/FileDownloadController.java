@@ -17,9 +17,6 @@ import java.net.URISyntaxException;
 @RestController
 public class FileDownloadController {
 
-    @Autowired
-    GeoServerInstance geoServerInstance;
-
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, value = "/download/shp")
     public ResponseEntity<String> downloadShp(
@@ -57,7 +54,7 @@ public class FileDownloadController {
     private String buildString(UploadType uploadType, String layername) throws URISyntaxException, MalformedURLException, GisImportException {
         String uri;
         if (uploadType.equals(UploadType.SHP)) {
-            uri = UriBuilder.fromUri(geoServerInstance.getUri())
+            uri = UriBuilder.fromUri("/geoserver")
                     .path("wfs")
                     .queryParam("request", "GetFeature")
                     .queryParam("version", "2.0.0")
@@ -65,7 +62,7 @@ public class FileDownloadController {
                     .queryParam("outputFormat", "shape-zip")
                     .build().toString();
         } else {
-            uri = UriBuilder.fromUri(geoServerInstance.getUri())
+            uri = UriBuilder.fromUri("/geoserver")
                     .path("wcs")
                     .queryParam("request", "GetCoverage")
                     .queryParam("service", "WCS")
