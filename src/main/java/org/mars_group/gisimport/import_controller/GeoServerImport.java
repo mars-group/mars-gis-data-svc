@@ -26,14 +26,14 @@ class GeoServerImport {
 
     String handleImport(String uploadDir, String uploadFilename, UploadType uploadType, String importId, String layername) throws GisImportException, MalformedURLException {
 
-        File file = new File(uploadDir + "/" + uploadFilename);
+        File file = new File(uploadDir + File.separator + uploadFilename);
         GisValidator gisValidator;
 
         try {
             gisValidator = new GisValidator(uploadDir, file.getAbsolutePath(), uploadType);
             gisValidator.validate();
         } catch (IOException | GisValidationException e) {
-            file.delete();
+//            file.delete();
             e.printStackTrace();
             throw new GisImportException(e.getMessage());
         }
@@ -64,7 +64,7 @@ class GeoServerImport {
                     break;
                 case ASC:
                     // We converted the Ascii Grid to GeoTiff, so this imports Geotiff
-                    file = new File(uploadDir + "/" + "TEST.tif");
+                    file = new File(uploadDir + File.separator + layername + ".tif");
                     result = publisher.publishGeoTIFF(importId, "Websuite_Asc", layername, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
                     break;
@@ -75,7 +75,7 @@ class GeoServerImport {
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            file.delete();
+//            file.delete();
             publisher.removeWorkspace(importId, false);
             throw new GisImportException(e.getMessage());
         }
@@ -83,7 +83,7 @@ class GeoServerImport {
         if (result) {
             return uploadFilename + " Import successfull!";
         } else {
-            file.delete();
+//            file.delete();
             publisher.removeWorkspace(importId, false);
             throw new GisImportException(uploadFilename + ": error inside the GeoServer! Import failed");
         }

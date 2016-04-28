@@ -1,5 +1,6 @@
 package org.mars_group.gisimport.import_controller;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.io.GridCoverage2DReader;
@@ -68,7 +69,7 @@ class GisValidator {
             if (zipHasDirectory) {
                 removeDirectoryFromZip();
             }
-            File file = new File(datasetDirectoryPath + "/" + datasetName + ".shp");
+            File file = new File(datasetDirectoryPath + File.separator + datasetName + ".shp");
             coordinateReferenceSystem = initShpFile(file);
 
         } else if (fileExtension.equalsIgnoreCase("asc")) {
@@ -86,10 +87,11 @@ class GisValidator {
             }
             GridCoverage2D coverage = reader.read(null);
 
-            System.out.println("Crs: " + coverage.getCoordinateReferenceSystem2D());
             coordinateReferenceSystem = coverage.getCoordinateReferenceSystem2D();
 
-            GeoTiffWriter writer = new GeoTiffWriter(new File(uploadDir + File.separator + "TEST.tif"));
+            System.out.println("ud (GisValidator): " + uploadDir + File.separator + FilenameUtils.getBaseName(filename) + ".tif");
+
+            GeoTiffWriter writer = new GeoTiffWriter(new File(uploadDir + File.separator + FilenameUtils.getBaseName(filename) + ".tif"));
             writer.write(coverage, null);
             writer.dispose();
 
@@ -183,10 +185,6 @@ class GisValidator {
         GridCoverage2D coverage = reader.read(null);
 
         return coverage.getCoordinateReferenceSystem2D();
-    }
-
-    void cleanUp() throws IOException {
-        FileUtils.deleteDirectory(new File(uploadDir));
     }
 
     String getDatasetName() {

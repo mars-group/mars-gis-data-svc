@@ -26,7 +26,7 @@ import java.util.UUID;
 @RestController
 class FileUploadController {
 
-    private static final String uploadDir = "upload-dir";
+    private static String uploadDir = "upload-dir";
 
     @Autowired
     GeoServerImport gsImport;
@@ -78,20 +78,28 @@ class FileUploadController {
                                                String description,
                                                UploadType uploadType) {
 
+        String importId = UUID.randomUUID().toString();
+
+        if (!new File(uploadDir).exists()) {
+            if (!new File(uploadDir).mkdir()) {
+                return new ResponseEntity<>("Failed to create general upload dir!", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        uploadDir += importId;
         if (!new File(uploadDir).exists()) {
             if (!new File(uploadDir).mkdir()) {
                 return new ResponseEntity<>("Failed to create upload dir!", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
 
-        String saveFileError = saveFile(file);
+        String saveFileError = saveFile(file, importId);
         if (saveFileError.length() > 0) {
             cleanUp();
             return new ResponseEntity<>(saveFileError, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         MetadataClient metadataClient = MetadataClient.getInstance(new RestTemplate(), "http://metadata:4444");
-        String importId = UUID.randomUUID().toString();
         Privacy privacyType = Privacy.valueOf(privacy);
 
         boolean initMetaDataSucceeded = metadataClient.initMetaData(
@@ -120,15 +128,16 @@ class FileUploadController {
         return new ResponseEntity<>(importId, HttpStatus.OK);
     }
 
-    private String saveFile(MultipartFile file) {
+    private String saveFile(MultipartFile file, String importId) {
         if (file.isEmpty()) {
             return "You failed to upload " + file.getOriginalFilename() + " because the file was empty";
         }
 
         try {
+            System.out.println("Upload Filename: " + uploadDir + File.separator + importId + File.separator + file.getOriginalFilename());
             // save file
             BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(
-                    new File(uploadDir + "/" + file.getOriginalFilename())));
+                    new File(uploadDir + File.separator + file.getOriginalFilename())));
             FileCopyUtils.copy(file.getInputStream(), stream);
             stream.close();
         } catch (Exception e) {
@@ -138,11 +147,11 @@ class FileUploadController {
     }
 
     private void cleanUp() {
-        try {
-            FileUtils.deleteDirectory(new File(FileUploadController.uploadDir));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            FileUtils.deleteDirectory(new File(FileUploadController.uploadDir));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
 }
