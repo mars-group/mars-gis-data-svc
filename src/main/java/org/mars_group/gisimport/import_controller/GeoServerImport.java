@@ -33,7 +33,6 @@ class GeoServerImport {
             gisValidator = new GisValidator(uploadDir, file.getAbsolutePath(), uploadType);
             gisValidator.validate();
         } catch (IOException | GisValidationException e) {
-//            file.delete();
             e.printStackTrace();
             throw new GisImportException(e.getMessage());
         }
@@ -41,16 +40,13 @@ class GeoServerImport {
         CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
         String crsCode;
 
-        if(crs == null) {
-            crsCode = "EPSG:4326";
-        } else {
-            try {
-                crsCode = CRS.lookupIdentifier(crs, true);
-            } catch (FactoryException e) {
-                e.printStackTrace();
-                throw new GisImportException(e.getMessage());
-            }
+        try {
+            crsCode = CRS.lookupIdentifier(crs, true);
+        } catch (FactoryException e) {
+            e.printStackTrace();
+            throw new GisImportException(e.getMessage());
         }
+
 
         boolean result = false;
         GeoServerRESTPublisher publisher = geoServerInstance.getPublisher();
@@ -75,7 +71,6 @@ class GeoServerImport {
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-//            file.delete();
             publisher.removeWorkspace(importId, false);
             throw new GisImportException(e.getMessage());
         }
@@ -83,7 +78,6 @@ class GeoServerImport {
         if (result) {
             return uploadFilename + " Import successfull!";
         } else {
-//            file.delete();
             publisher.removeWorkspace(importId, false);
             throw new GisImportException(uploadFilename + ": error inside the GeoServer! Import failed");
         }

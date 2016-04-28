@@ -93,10 +93,11 @@ class FileUploadController {
             }
         }
 
-        String saveFileError = saveFile(file, importId);
-        if (saveFileError.length() > 0) {
-            cleanUp();
-            return new ResponseEntity<>(saveFileError, HttpStatus.INTERNAL_SERVER_ERROR);
+        try {
+            saveFile(file);
+        } catch (GisImportException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         MetadataClient metadataClient = MetadataClient.getInstance(new RestTemplate(), "http://metadata:4444");
@@ -106,8 +107,6 @@ class FileUploadController {
                 importId, projectId, userId, privacyType, 42.0, 23.0, ImportType.GIS, title, description);
 
         if (!initMetaDataSucceeded) {
-            System.out.println(importId + " Metadata creation failed");
-            cleanUp();
             return new ResponseEntity<>(importId + " Metadata creation failed", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -123,35 +122,30 @@ class FileUploadController {
 
         metadataClient.setState(importId, ImportState.FINISHED);
 
-        cleanUp();
+        try {
+            FileUtils.deleteDirectory(new File(FileUploadController.uploadDir));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         return new ResponseEntity<>(importId, HttpStatus.OK);
     }
 
-    private String saveFile(MultipartFile file, String importId) {
+    private void saveFile(MultipartFile file) throws GisImportException {
         if (file.isEmpty()) {
-            return "You failed to upload " + file.getOriginalFilename() + " because the file was empty";
+            throw new GisImportException("You failed to upload " + file.getOriginalFilename() + " because the file was empty");
         }
 
         try {
-            System.out.println("Upload Filename: " + uploadDir + File.separator + importId + File.separator + file.getOriginalFilename());
             // save file
-            BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(
-                    new File(uploadDir + File.separator + file.getOriginalFilename())));
+            File f = new File(uploadDir + File.separator + file.getOriginalFilename());
+            BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(f));
             FileCopyUtils.copy(file.getInputStream(), stream);
             stream.close();
         } catch (Exception e) {
-            return "You failed to upload " + file.getOriginalFilename() + " => " + e.getMessage();
+            e.printStackTrace();
+            throw new GisImportException(e.getMessage());
         }
-        return "";
-    }
-
-    private void cleanUp() {
-//        try {
-//            FileUtils.deleteDirectory(new File(FileUploadController.uploadDir));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
     }
 
 }

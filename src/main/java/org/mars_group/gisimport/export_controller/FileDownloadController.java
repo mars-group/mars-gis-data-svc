@@ -56,7 +56,7 @@ public class FileDownloadController {
 
     private String buildString(UploadType uploadType, String layername) throws URISyntaxException, MalformedURLException, GisImportException {
         String uri;
-        if(uploadType.equals(UploadType.SHP)) {
+        if (uploadType.equals(UploadType.SHP)) {
             uri = UriBuilder.fromUri(geoServerInstance.getUri())
                     .path("wfs")
                     .queryParam("request", "GetFeature")

@@ -36,7 +36,7 @@ public class GeoServerInstance {
         Application app = discoveryClient.getApplication("geoserver");
         int numberOfInstances = app.getInstances().size();
 
-        if(numberOfInstances < 1) {
+        if (numberOfInstances < 1) {
             throw new GisImportException("No GeoServer Instance found!");
         }
 

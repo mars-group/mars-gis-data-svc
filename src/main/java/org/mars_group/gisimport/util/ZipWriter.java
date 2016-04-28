@@ -39,8 +39,8 @@ public class ZipWriter {
         File zipFileName = Paths.get(outputZip).toFile();
 
         // open the zip stream in a try resource block, no finally needed
-        try( ZipOutputStream zipStream = new ZipOutputStream(
-                new FileOutputStream(zipFileName)) ) {
+        try (ZipOutputStream zipStream = new ZipOutputStream(
+                new FileOutputStream(zipFileName))) {
 
             // traverse every file in the selected directory and add them
             // to the zip file by calling addToZipFile(..)
@@ -48,8 +48,7 @@ public class ZipWriter {
             dirStream.forEach(path -> addToZipFile((Path) path, zipStream));
 
             LOG.info("Zip file created in " + directory.toFile().getPath());
-        }
-        catch(IOException|ZipParsingException e) {
+        } catch (IOException | ZipParsingException e) {
             LOG.log(Level.SEVERE, "Error while zipping.", e);
         }
     }
@@ -57,7 +56,8 @@ public class ZipWriter {
     /**
      * Adds an extra file to the zip archive, copying in the created
      * date and a comment.
-     * @param file file to be archived
+     *
+     * @param file      file to be archived
      * @param zipStream archive to contain the file.
      */
     private void addToZipFile(Path file, ZipOutputStream zipStream) {
@@ -90,8 +90,7 @@ public class ZipWriter {
             LOG.info("Stored " + written + " bytes to " + inputFileName);
 
 
-        }
-        catch(IOException e) {
+        } catch (IOException e) {
             throw new ZipParsingException("Unable to process " + inputFileName, e);
         }
     }

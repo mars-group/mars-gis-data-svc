@@ -10,7 +10,7 @@ import java.io.IOException;
 @EnableEurekaClient
 public class GisImportApplication {
 
-	public static void main(String[] args) throws IOException {
-		SpringApplication.run(GisImportApplication.class, args);
+    public static void main(String[] args) throws IOException {
+        SpringApplication.run(GisImportApplication.class, args);
     }
 }

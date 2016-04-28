@@ -1,6 +1,5 @@
 package org.mars_group.gisimport.import_controller;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.io.GridCoverage2DReader;
@@ -58,7 +57,7 @@ class GisValidator {
         String fileExtension = FilenameUtils.getExtension(filename);
 
         if (fileExtension.equalsIgnoreCase("zip")) {
-            if(!uploadType.equals(UploadType.SHP)) {
+            if (!uploadType.equals(UploadType.SHP)) {
                 throw new GisValidationException("The file extension does not match the upload type!");
             }
             zipHasDirectory = zipHasDirectory(filename);
@@ -73,7 +72,7 @@ class GisValidator {
             coordinateReferenceSystem = initShpFile(file);
 
         } else if (fileExtension.equalsIgnoreCase("asc")) {
-            if(!uploadType.equals(UploadType.ASC)) {
+            if (!uploadType.equals(UploadType.ASC)) {
                 throw new GisValidationException("The file extension does not match the upload type!");
             }
 
@@ -97,8 +96,8 @@ class GisValidator {
 
             datasetName = datasetDirectoryName;
 
-        } else if(fileExtension.equalsIgnoreCase("tif")) {
-            if(!uploadType.equals(UploadType.GEOTIFF)) {
+        } else if (fileExtension.equalsIgnoreCase("tif")) {
+            if (!uploadType.equals(UploadType.GEOTIFF)) {
                 throw new GisValidationException("The file extension does not match the upload type!");
             }
             coordinateReferenceSystem = initRasterFile(new GeoTiffReader(filename));
