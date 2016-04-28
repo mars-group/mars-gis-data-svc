@@ -11,6 +11,7 @@ import org.geotools.gce.arcgrid.ArcGridReader;
 import org.geotools.gce.geotiff.GeoTiffReader;
 import org.geotools.gce.geotiff.GeoTiffWriter;
 import org.geotools.referencing.CRS;
+import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
 import org.mars_group.gisimport.util.UnzipUtility;
 import org.mars_group.gisimport.util.UploadType;
@@ -32,7 +33,6 @@ import java.util.zip.ZipFile;
 class GisValidator {
     private boolean zipHasDirectory;
     private String uploadDir;
-    private String filename;
     private UploadType uploadType;
     private String datasetDirectoryPath;
     private String datasetDirectoryName;
@@ -43,74 +43,120 @@ class GisValidator {
     /**
      * Validates your GIS file
      *
-     * @param uploadDir the upload directory
-     * @param filename  this has to be either .zip .shp or .asc
+     * @param uploadDir  the upload directory
+     * @param filename   this has to be either .zip .tif or .asc
+     * @param uploadType my be null. We will detect your upload based on the content
      */
-    GisValidator(String uploadDir, String filename, UploadType uploadType) {
-        this.filename = filename;
+    GisValidator(String uploadDir, String filename, UploadType uploadType) throws IOException, GisValidationException, GisImportException {
         this.uploadDir = uploadDir;
-        this.uploadType = uploadType;
-    }
 
-    void validate() throws GisValidationException, IOException {
+        if (uploadType == null) {
+            this.uploadType = determinUploadType(filename);
+        } else {
+            this.uploadType = uploadType;
+        }
+
         datasetDirectoryName = FilenameUtils.getBaseName(filename);
         String fileExtension = FilenameUtils.getExtension(filename);
 
-        if (fileExtension.equalsIgnoreCase("zip")) {
-            if (!uploadType.equals(UploadType.SHP)) {
-                throw new GisValidationException("The file extension does not match the upload type!");
-            }
-            zipHasDirectory = zipHasDirectory(filename);
+        switch (fileExtension) {
+            case "asc":
+                validateAsc(filename);
+                break;
 
-            datasetDirectoryPath = unzip(filename);
-            findShpDatasetName();
+            case "tif":
+                validateGeoTiff(filename);
+                break;
 
-            if (zipHasDirectory) {
-                removeDirectoryFromZip();
-            }
-            File file = new File(datasetDirectoryPath + File.separator + datasetName + ".shp");
-            coordinateReferenceSystem = initShpFile(file);
+            case "zip":
+                zipHasDirectory = zipHasDirectory(filename);
+                datasetDirectoryPath = unzip(filename);
 
-        } else if (fileExtension.equalsIgnoreCase("asc")) {
-            if (!uploadType.equals(UploadType.ASC)) {
-                throw new GisValidationException("The file extension does not match the upload type!");
-            }
+                switch (this.uploadType) {
+                    case ASC:
+                        validateAsc(datasetDirectoryPath + File.separator + datasetDirectoryName + ".asc");
+                        break;
+                    case GEOTIFF:
+                        validateGeoTiff(datasetDirectoryPath + File.separator + datasetDirectoryName + ".tif");
+                        break;
+                    case SHP:
+                        validateShp();
+                        break;
+                }
+                break;
 
-            ArcGridReader reader;
-            try {
-                Hints hints = new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode("EPSG:27200"));
-                reader = new ArcGridReader(new File(filename), hints);
-            } catch (FactoryException e) {
-                e.printStackTrace();
-                throw new GisValidationException(e.getMessage());
-            }
-            GridCoverage2D coverage = reader.read(null);
-
-            coordinateReferenceSystem = coverage.getCoordinateReferenceSystem2D();
-
-            GeoTiffWriter writer = new GeoTiffWriter(new File(uploadDir + File.separator + FilenameUtils.getBaseName(filename) + ".tif"));
-            writer.write(coverage, null);
-            writer.dispose();
-
-            datasetName = datasetDirectoryName;
-
-        } else if (fileExtension.equalsIgnoreCase("tif")) {
-            if (!uploadType.equals(UploadType.GEOTIFF)) {
-                throw new GisValidationException("The file extension does not match the upload type!");
-            }
-            coordinateReferenceSystem = initRasterFile(new GeoTiffReader(filename));
-            datasetName = datasetDirectoryName;
-
-        } else {
-            throw new GisValidationException(fileExtension + " is not a supported file extension!");
+            default:
+                throw new GisValidationException(fileExtension + " is not a supported file extension!");
         }
     }
 
+    private void validateAsc(String filename) throws IOException, GisValidationException {
+        if (!uploadType.equals(UploadType.ASC)) {
+            throw new GisValidationException("The file extension does not match the upload type!");
+        }
+
+        ArcGridReader reader;
+        try {
+            Hints hints = new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode("EPSG:27200"));
+            reader = new ArcGridReader(new File(filename), hints);
+        } catch (FactoryException e) {
+            e.printStackTrace();
+            throw new GisValidationException(e.getMessage());
+        }
+        GridCoverage2D coverage = reader.read(null);
+
+        coordinateReferenceSystem = coverage.getCoordinateReferenceSystem2D();
+
+        GeoTiffWriter writer = new GeoTiffWriter(new File(uploadDir + File.separator + FilenameUtils.getBaseName(filename) + ".tif"));
+        writer.write(coverage, null);
+        writer.dispose();
+
+        datasetName = datasetDirectoryName;
+    }
+
+    private void validateGeoTiff(String filename) throws GisValidationException, IOException {
+        if (!uploadType.equals(UploadType.GEOTIFF)) {
+            throw new GisValidationException("The file extension does not match the upload type!");
+        }
+        coordinateReferenceSystem = initRasterFile(new GeoTiffReader(filename));
+        datasetName = datasetDirectoryName;
+    }
+
+    private void validateShp() throws GisImportException, IOException {
+        datasetName = findShpDatasetName();
+
+        if (zipHasDirectory) {
+            createZipwithoutDirectory();
+        }
+
+        File file = new File(datasetDirectoryPath + File.separator + datasetName + ".shp");
+        coordinateReferenceSystem = initShpFile(file);
+    }
+
+    private UploadType determinUploadType(String filename) throws IOException, GisValidationException {
+        ZipFile zipFile = new ZipFile(filename);
+        Enumeration zipEntries = zipFile.entries();
+
+        while (zipEntries.hasMoreElements()) {
+            ZipEntry zip = (ZipEntry) zipEntries.nextElement();
+
+            switch (FilenameUtils.getExtension(zip.getName())) {
+                case "asc":
+                    return UploadType.ASC;
+                case "tif":
+                    return UploadType.GEOTIFF;
+                case "shp":
+                    return UploadType.SHP;
+            }
+        }
+
+        throw new GisValidationException("could not detect your upload type!");
+    }
+
+
     // GeoServer can not handle directories
     private boolean zipHasDirectory(String filename) throws IOException {
-        ZipFile zipFile;
-        zipFile = new ZipFile(filename);
-
+        ZipFile zipFile = new ZipFile(filename);
         Enumeration zipEntries = zipFile.entries();
 
         while (zipEntries.hasMoreElements()) {
@@ -125,41 +171,31 @@ class GisValidator {
     private String unzip(String filename) throws IOException {
         String unzipDirectory = uploadDir;
 
-        if (!zipHasDirectory) {
-            unzipDirectory += "/" + datasetDirectoryName;
-        }
-
         UnzipUtility unzipper = new UnzipUtility();
         unzipper.unzip(filename, unzipDirectory);
 
         return unzipDirectory;
     }
 
-    private void removeDirectoryFromZip() {
+    private void createZipwithoutDirectory() {
         ZipWriter zw = new ZipWriter();
-        String path = datasetDirectoryPath + "/" + datasetDirectoryName;
+        String path = datasetDirectoryPath + File.separator + datasetDirectoryName;
         zw.createZip(path, path + ".zip");
     }
 
-    private void findShpDatasetName() {
-        datasetName = datasetDirectoryName;
+    private String findShpDatasetName() throws GisImportException {
         File folder = new File(datasetDirectoryPath);
         File[] files = folder.listFiles();
         if (files != null) {
             for (File f : files) {
                 if (FilenameUtils.getExtension(f.getName()).equalsIgnoreCase("shp")) {
-                    datasetName = FilenameUtils.getBaseName(f.getName());
-                    break;
+                    return FilenameUtils.getBaseName(f.getName());
                 }
             }
         }
+        throw new GisImportException("Shp dataset name could not be detected!");
     }
 
-    /**
-     * reads the datasetName and spatial reference
-     *
-     * @param file input file
-     */
     private CoordinateReferenceSystem initShpFile(File file) throws IOException {
         Map<String, Object> map = new HashMap<>();
 
@@ -172,11 +208,6 @@ class GisValidator {
         return source.getInfo().getCRS();
     }
 
-    /**
-     * reads the spatial reference
-     *
-     * @param reader Reader of the appropriate GIS format
-     */
     private <T extends GridCoverage2DReader> CoordinateReferenceSystem initRasterFile(T reader) throws IOException {
         GridCoverage2D coverage = reader.read(null);
 
@@ -191,4 +222,7 @@ class GisValidator {
         return coordinateReferenceSystem;
     }
 
+    UploadType getUploadType() {
+        return uploadType;
+    }
 }

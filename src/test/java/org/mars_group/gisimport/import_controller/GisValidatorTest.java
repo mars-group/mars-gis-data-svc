@@ -2,6 +2,7 @@ package org.mars_group.gisimport.import_controller;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
+import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
 import org.mars_group.gisimport.util.UploadType;
 import org.opengis.referencing.FactoryException;
@@ -35,15 +36,15 @@ public class GisValidatorTest {
     public void shpConstructor() {
         String filename = "src/test/resources/shapefile.zip";
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
-        GisValidator gisValidator = new GisValidator(uploadDir, filename, UploadType.SHP);
 
         try {
-            gisValidator.validate();
+            GisValidator gisValidator = new GisValidator(uploadDir, filename, UploadType.SHP);
+
             CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
             assertTrue(crs.getName().toString().equals("Geographic"));
             assertTrue(gisValidator.getDatasetName().equals("pop_pnt"));
 
-        } catch (IOException | GisValidationException e) {
+        } catch (IOException | GisValidationException | GisImportException e) {
             e.printStackTrace();
             fail();
         } finally {
@@ -57,14 +58,13 @@ public class GisValidatorTest {
         String filename = "src/test/resources/ascii_grid.asc";
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
 
-        GisValidator gisValidator = new GisValidator(uploadDir, filename, UploadType.ASC);
-
         try {
-            gisValidator.validate();
+            GisValidator gisValidator = new GisValidator(uploadDir, filename, UploadType.ASC);
+
             CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
             assertTrue(crs.getName().toString().equals("EPSG:NZGD49 / New Zealand Map Grid"));
 
-        } catch (IOException | GisValidationException e) {
+        } catch (IOException | GisValidationException | GisImportException e) {
             e.printStackTrace();
             fail();
         } finally {
@@ -77,14 +77,14 @@ public class GisValidatorTest {
     public void geoTiffConstructor() {
         String filename = "src/test/resources/geotiff.tif";
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
-        GisValidator gisValidator = new GisValidator(uploadDir, filename, UploadType.GEOTIFF);
 
         try {
-            gisValidator.validate();
+            GisValidator gisValidator = new GisValidator(uploadDir, filename, UploadType.GEOTIFF);
+
             CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
             assertTrue(crs.getName().toString().equals("EPSG:NAD27 / UTM zone 13N"));
 
-        } catch (IOException | GisValidationException e) {
+        } catch (IOException | GisValidationException | GisImportException e) {
             e.printStackTrace();
             fail();
         } finally {

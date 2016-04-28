@@ -26,11 +26,12 @@ import java.util.UUID;
 @RestController
 class FileUploadController {
 
-    private static String uploadDir = "upload-dir";
+    private static final String uploadDir = "upload-dir";
 
     @Autowired
     GeoServerImport gsImport;
 
+    @Deprecated
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST, value = "/upload/shp")
     public ResponseEntity<String> handleShpUpload(
@@ -44,6 +45,7 @@ class FileUploadController {
         return startImport(file, privacy, projectId, userId, title, description, UploadType.SHP);
     }
 
+    @Deprecated
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST, value = "/upload/asc")
     public ResponseEntity<String> handleAscUpload(
@@ -57,6 +59,7 @@ class FileUploadController {
         return startImport(file, privacy, projectId, userId, title, description, UploadType.ASC);
     }
 
+    @Deprecated
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST, value = "/upload/geotiff")
     public ResponseEntity<String> handleGeoTiffUpload(
@@ -70,6 +73,19 @@ class FileUploadController {
         return startImport(file, privacy, projectId, userId, title, description, UploadType.GEOTIFF);
     }
 
+    @ResponseBody
+    @RequestMapping(method = RequestMethod.POST, value = "/upload")
+    public ResponseEntity<String> handleUpload(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam String privacy,
+            @RequestParam int projectId,
+            @RequestParam int userId,
+            @RequestParam String title,
+            @RequestParam(required = false) String description) {
+
+        return startImport(file, privacy, projectId, userId, title, description, null);
+    }
+
     private ResponseEntity<String> startImport(MultipartFile file,
                                                String privacy,
                                                int projectId,
@@ -78,23 +94,22 @@ class FileUploadController {
                                                String description,
                                                UploadType uploadType) {
 
-        String importId = UUID.randomUUID().toString();
-
         if (!new File(uploadDir).exists()) {
             if (!new File(uploadDir).mkdir()) {
                 return new ResponseEntity<>("Failed to create general upload dir!", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
 
-        uploadDir += File.separator + importId;
-        if (!new File(uploadDir).exists()) {
-            if (!new File(uploadDir).mkdir()) {
+        String importId = UUID.randomUUID().toString();
+        String specificUploadDir = uploadDir + File.separator + importId;
+        if (!new File(specificUploadDir).exists()) {
+            if (!new File(specificUploadDir).mkdir()) {
                 return new ResponseEntity<>("Failed to create upload dir!", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
 
         try {
-            saveFile(file);
+            saveFile(file, specificUploadDir);
         } catch (GisImportException e) {
             e.printStackTrace();
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -114,7 +129,7 @@ class FileUploadController {
 
         try {
             // START THE IMPORT
-            gsImport.handleImport(uploadDir, file.getOriginalFilename(), uploadType, importId, title);
+            gsImport.handleImport(specificUploadDir, file.getOriginalFilename(), uploadType, importId, title);
         } catch (GisImportException | MalformedURLException e) {
             e.printStackTrace();
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -123,7 +138,7 @@ class FileUploadController {
         metadataClient.setState(importId, ImportState.FINISHED);
 
         try {
-            FileUtils.deleteDirectory(new File(FileUploadController.uploadDir));
+            FileUtils.deleteDirectory(new File(specificUploadDir));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -131,14 +146,14 @@ class FileUploadController {
         return new ResponseEntity<>(importId, HttpStatus.OK);
     }
 
-    private void saveFile(MultipartFile file) throws GisImportException {
+    private void saveFile(MultipartFile file, String specificUploadDir) throws GisImportException {
         if (file.isEmpty()) {
             throw new GisImportException("You failed to upload " + file.getOriginalFilename() + " because the file was empty");
         }
 
         try {
             // save file
-            File f = new File(uploadDir + File.separator + file.getOriginalFilename());
+            File f = new File(specificUploadDir + File.separator + file.getOriginalFilename());
             BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(f));
             FileCopyUtils.copy(file.getInputStream(), stream);
             stream.close();
