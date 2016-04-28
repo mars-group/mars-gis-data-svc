@@ -3,6 +3,7 @@ package org.mars_group.gisimport.import_controller;
 
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
+import org.apache.commons.io.FilenameUtils;
 import org.geotools.referencing.CRS;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
@@ -60,7 +61,7 @@ class GeoServerImport {
                     break;
                 case ASC:
                     // We converted the Ascii Grid to GeoTiff, so this imports Geotiff
-                    file = new File(uploadDir + File.separator + layername + ".tif");
+                    file = new File(uploadDir + File.separator + FilenameUtils.getBaseName(uploadFilename) + ".tif");
                     result = publisher.publishGeoTIFF(importId, "Websuite_Asc", layername, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
                     break;

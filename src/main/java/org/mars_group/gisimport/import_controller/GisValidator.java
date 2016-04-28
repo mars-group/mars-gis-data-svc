@@ -88,8 +88,6 @@ class GisValidator {
 
             coordinateReferenceSystem = coverage.getCoordinateReferenceSystem2D();
 
-            System.out.println("ud (GisValidator): " + uploadDir + File.separator + FilenameUtils.getBaseName(filename) + ".tif");
-
             GeoTiffWriter writer = new GeoTiffWriter(new File(uploadDir + File.separator + FilenameUtils.getBaseName(filename) + ".tif"));
             writer.write(coverage, null);
             writer.dispose();
@@ -118,7 +116,6 @@ class GisValidator {
         while (zipEntries.hasMoreElements()) {
             ZipEntry zip = (ZipEntry) zipEntries.nextElement();
             if (zip.isDirectory() && !zip.getName().equals("__MACOSX/")) {
-                System.out.println("Directory: " + zip.getName());
                 return true;
             }
         }

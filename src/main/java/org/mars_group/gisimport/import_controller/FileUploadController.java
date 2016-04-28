@@ -86,7 +86,7 @@ class FileUploadController {
             }
         }
 
-        uploadDir += importId;
+        uploadDir += File.separator + importId;
         if (!new File(uploadDir).exists()) {
             if (!new File(uploadDir).mkdir()) {
                 return new ResponseEntity<>("Failed to create upload dir!", HttpStatus.INTERNAL_SERVER_ERROR);
