@@ -45,16 +45,11 @@ class GisValidator {
      *
      * @param uploadDir  the upload directory
      * @param filename   this has to be either .zip .tif or .asc
-     * @param uploadType my be null. We will detect your upload based on the content
      */
-    GisValidator(String uploadDir, String filename, UploadType uploadType) throws IOException, GisValidationException, GisImportException {
+    GisValidator(String uploadDir, String filename) throws IOException, GisValidationException, GisImportException {
         this.uploadDir = uploadDir;
+        this.uploadType = determinUploadType(filename);
 
-        if (uploadType == null) {
-            this.uploadType = determinUploadType(filename);
-        } else {
-            this.uploadType = uploadType;
-        }
 
         datasetDirectoryName = FilenameUtils.getBaseName(filename);
         String fileExtension = FilenameUtils.getExtension(filename);

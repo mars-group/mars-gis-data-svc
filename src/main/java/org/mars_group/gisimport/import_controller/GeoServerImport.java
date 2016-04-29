@@ -25,13 +25,13 @@ class GeoServerImport {
     @Autowired
     GeoServerInstance geoServerInstance;
 
-    void handleImport(String uploadDir, String uploadFilename, UploadType uploadType, String importId, String layername) throws GisImportException, MalformedURLException {
+    void handleImport(String uploadDir, String uploadFilename, String importId, String layername) throws GisImportException, MalformedURLException {
 
         File file = new File(uploadDir + File.separator + uploadFilename);
         GisValidator gisValidator;
 
         try {
-            gisValidator = new GisValidator(uploadDir, file.getAbsolutePath(), uploadType);
+            gisValidator = new GisValidator(uploadDir, file.getAbsolutePath());
         } catch (IOException | GisValidationException e) {
             e.printStackTrace();
             throw new GisImportException(e.getMessage());
@@ -51,9 +51,9 @@ class GeoServerImport {
         GeoServerRESTPublisher publisher = geoServerInstance.getPublisher();
         publisher.createWorkspace(importId);
 
-        if (uploadType == null) {
-            uploadType = gisValidator.getUploadType();
-        }
+
+        UploadType uploadType = gisValidator.getUploadType();
+
 
         try {
             switch (uploadType) {
