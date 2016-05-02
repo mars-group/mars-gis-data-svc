@@ -31,7 +31,7 @@ class GeoServerImport {
         GisValidator gisValidator;
 
         try {
-            gisValidator = new GisValidator(uploadDir, file.getAbsolutePath(), uploadType);
+            gisValidator = new GisValidator(uploadDir, file.getAbsolutePath());
         } catch (IOException | GisValidationException e) {
             e.printStackTrace();
             throw new GisImportException(e.getMessage());

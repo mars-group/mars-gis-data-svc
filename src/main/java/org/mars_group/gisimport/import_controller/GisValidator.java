@@ -45,16 +45,10 @@ class GisValidator {
      *
      * @param uploadDir  the upload directory
      * @param filename   this has to be either .zip .tif or .asc
-     * @param uploadType my be null. We will detect your upload based on the content
      */
-    GisValidator(String uploadDir, String filename, UploadType uploadType) throws IOException, GisValidationException, GisImportException {
+    GisValidator(String uploadDir, String filename) throws IOException, GisValidationException, GisImportException {
         this.uploadDir = uploadDir;
-
-        if (uploadType == null) {
-            this.uploadType = determinUploadType(filename);
-        } else {
-            this.uploadType = uploadType;
-        }
+        this.uploadType = determinUploadType(filename);
 
         datasetDirectoryName = FilenameUtils.getBaseName(filename);
         String fileExtension = FilenameUtils.getExtension(filename);
@@ -134,20 +128,32 @@ class GisValidator {
     }
 
     private UploadType determinUploadType(String filename) throws IOException, GisValidationException {
-        ZipFile zipFile = new ZipFile(filename);
-        Enumeration zipEntries = zipFile.entries();
 
-        while (zipEntries.hasMoreElements()) {
-            ZipEntry zip = (ZipEntry) zipEntries.nextElement();
+        String extension = FilenameUtils.getExtension(filename);
+        switch (extension) {
+            case "asc":
+                return UploadType.ASC;
 
-            switch (FilenameUtils.getExtension(zip.getName())) {
-                case "asc":
-                    return UploadType.ASC;
-                case "tif":
-                    return UploadType.GEOTIFF;
-                case "shp":
-                    return UploadType.SHP;
-            }
+            case "tif":
+                return UploadType.GEOTIFF;
+
+            case "zip":
+                ZipFile zipFile = new ZipFile(filename);
+                Enumeration zipEntries = zipFile.entries();
+
+                while (zipEntries.hasMoreElements()) {
+                    ZipEntry zip = (ZipEntry) zipEntries.nextElement();
+
+                    switch (FilenameUtils.getExtension(zip.getName())) {
+                        case "asc":
+                            return UploadType.ASC;
+                        case "tif":
+                            return UploadType.GEOTIFF;
+                        case "shp":
+                            return UploadType.SHP;
+                    }
+                }
+                break;
         }
 
         throw new GisValidationException("could not detect your upload type!");
