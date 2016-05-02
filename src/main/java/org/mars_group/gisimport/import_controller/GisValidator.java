@@ -129,20 +129,32 @@ class GisValidator {
     }
 
     private UploadType determinUploadType(String filename) throws IOException, GisValidationException {
-        ZipFile zipFile = new ZipFile(filename);
-        Enumeration zipEntries = zipFile.entries();
 
-        while (zipEntries.hasMoreElements()) {
-            ZipEntry zip = (ZipEntry) zipEntries.nextElement();
+        String extension = FilenameUtils.getExtension(filename);
+        switch (extension) {
+            case "asc":
+                return UploadType.ASC;
 
-            switch (FilenameUtils.getExtension(zip.getName())) {
-                case "asc":
-                    return UploadType.ASC;
-                case "tif":
-                    return UploadType.GEOTIFF;
-                case "shp":
-                    return UploadType.SHP;
-            }
+            case "tif":
+                return UploadType.GEOTIFF;
+
+            case "zip":
+                ZipFile zipFile = new ZipFile(filename);
+                Enumeration zipEntries = zipFile.entries();
+
+                while (zipEntries.hasMoreElements()) {
+                    ZipEntry zip = (ZipEntry) zipEntries.nextElement();
+
+                    switch (FilenameUtils.getExtension(zip.getName())) {
+                        case "asc":
+                            return UploadType.ASC;
+                        case "tif":
+                            return UploadType.GEOTIFF;
+                        case "shp":
+                            return UploadType.SHP;
+                    }
+                }
+                break;
         }
 
         throw new GisValidationException("could not detect your upload type!");

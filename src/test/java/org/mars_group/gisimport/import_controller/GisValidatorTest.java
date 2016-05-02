@@ -38,7 +38,7 @@ public class GisValidatorTest {
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
 
         try {
-            GisValidator gisValidator = new GisValidator(uploadDir, filename, UploadType.SHP);
+            GisValidator gisValidator = new GisValidator(uploadDir, filename);
 
             CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
             assertTrue(crs.getName().toString().equals("Geographic"));
@@ -59,7 +59,7 @@ public class GisValidatorTest {
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
 
         try {
-            GisValidator gisValidator = new GisValidator(uploadDir, filename, UploadType.ASC);
+            GisValidator gisValidator = new GisValidator(uploadDir, filename);
 
             CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
             assertTrue(crs.getName().toString().equals("EPSG:NZGD49 / New Zealand Map Grid"));
@@ -79,7 +79,7 @@ public class GisValidatorTest {
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
 
         try {
-            GisValidator gisValidator = new GisValidator(uploadDir, filename, UploadType.GEOTIFF);
+            GisValidator gisValidator = new GisValidator(uploadDir, filename);
 
             CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
             assertTrue(crs.getName().toString().equals("EPSG:NAD27 / UTM zone 13N"));
