@@ -50,7 +50,6 @@ class GisValidator {
         this.uploadDir = uploadDir;
         this.uploadType = determinUploadType(filename);
 
-
         datasetDirectoryName = FilenameUtils.getBaseName(filename);
         String fileExtension = FilenameUtils.getExtension(filename);
 
