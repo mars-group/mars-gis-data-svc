@@ -4,7 +4,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
-import org.mars_group.gisimport.util.UploadType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 

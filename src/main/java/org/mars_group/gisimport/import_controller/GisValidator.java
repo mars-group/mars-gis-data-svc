@@ -43,8 +43,8 @@ class GisValidator {
     /**
      * Validates your GIS file
      *
-     * @param uploadDir  the upload directory
-     * @param filename   this has to be either .zip .tif or .asc
+     * @param uploadDir the upload directory
+     * @param filename  this has to be either .zip .tif or .asc
      */
     GisValidator(String uploadDir, String filename) throws IOException, GisValidationException, GisImportException {
         this.uploadDir = uploadDir;
