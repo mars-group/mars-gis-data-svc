@@ -1,7 +1,5 @@
 package org.mars_group.gisimport.export_controller;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.core.UriBuilder;
@@ -19,17 +17,15 @@ public class FileDownloadController {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, value = "/download/vector")
-    public ResponseEntity<String> downloadVectorFile(@RequestParam String importId,
-                                                     @RequestParam String datasetName) {
+    public String downloadVectorFile(@RequestParam String importId, @RequestParam String datasetName) {
 
-        String uri = UriBuilder.fromUri("/geoserver")
+        return UriBuilder.fromUri("")
                 .path("wfs")
                 .queryParam("request", "GetFeature")
                 .queryParam("version", "2.0.0")
                 .queryParam("typeName", importId + ":" + datasetName)
                 .queryParam("outputFormat", "shape-zip")
                 .build().toString();
-        return new ResponseEntity<>(uri, HttpStatus.OK);
     }
 
     /**
@@ -41,10 +37,9 @@ public class FileDownloadController {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, value = "/download/raster")
-    public ResponseEntity<String> downloadRasterFile(@RequestParam String importId,
-                                                     @RequestParam String title) {
+    public String downloadRasterFile(@RequestParam String importId, @RequestParam String title) {
 
-        String uri = UriBuilder.fromUri("/geoserver")
+        return UriBuilder.fromUri("")
                 .path("wcs")
                 .queryParam("request", "GetCoverage")
                 .queryParam("service", "WCS")
@@ -52,6 +47,5 @@ public class FileDownloadController {
                 .queryParam("coverageId", importId + ":" + title)
                 .queryParam("format", "ArcGrid")
                 .build().toString();
-        return new ResponseEntity<>(uri, HttpStatus.OK);
     }
 }
