@@ -70,7 +70,7 @@ class GisValidator {
                     case ASC:
                         validateAsc(datasetDirectoryPath + File.separator + datasetDirectoryName + ".asc");
                         break;
-                    case GEOTIFF:
+                    case TIF:
                         validateGeoTiff(datasetDirectoryPath + File.separator + datasetDirectoryName + ".tif");
                         break;
                     case SHP:
@@ -109,7 +109,7 @@ class GisValidator {
     }
 
     private void validateGeoTiff(String filename) throws GisValidationException, IOException {
-        if (!uploadType.equals(UploadType.GEOTIFF)) {
+        if (!uploadType.equals(UploadType.TIF)) {
             throw new GisValidationException("The file extension does not match the upload type!");
         }
         coordinateReferenceSystem = initRasterFile(new GeoTiffReader(filename));
@@ -135,7 +135,7 @@ class GisValidator {
                 return UploadType.ASC;
 
             case "tif":
-                return UploadType.GEOTIFF;
+                return UploadType.TIF;
 
             case "zip":
                 ZipFile zipFile = new ZipFile(filename);
@@ -148,7 +148,7 @@ class GisValidator {
                         case "asc":
                             return UploadType.ASC;
                         case "tif":
-                            return UploadType.GEOTIFF;
+                            return UploadType.TIF;
                         case "shp":
                             return UploadType.SHP;
                     }

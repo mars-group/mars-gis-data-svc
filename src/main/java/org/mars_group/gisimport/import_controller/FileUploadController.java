@@ -66,7 +66,7 @@ class FileUploadController {
 
     private ResponseEntity<String> handleUpload(String title, String filename, String importId, String specificUploadDir) {
 
-        MetadataClient metadataClient = MetadataClient.getInstance(new RestTemplate(), "http://metadata:4444");
+        MetadataClient metadataClient = MetadataClient.getInstance(restTemplate, "http://metadata:4444");
         metadataClient.setState(importId, ImportState.PROCESSING);
 
         try {

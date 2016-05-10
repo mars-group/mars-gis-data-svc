@@ -19,8 +19,8 @@ public class FileDownloadController {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, value = "/download/vector")
-    public ResponseEntity<String> downloadShp(@RequestParam String importId,
-                                              @RequestParam String datasetName) {
+    public ResponseEntity<String> downloadVectorFile(@RequestParam String importId,
+                                                     @RequestParam String datasetName) {
 
         String uri = UriBuilder.fromUri("/geoserver")
                 .path("wfs")
@@ -41,8 +41,8 @@ public class FileDownloadController {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, value = "/download/raster")
-    public ResponseEntity<String> downloadGeoTiff(@RequestParam String importId,
-                                                  @RequestParam String title) {
+    public ResponseEntity<String> downloadRasterFile(@RequestParam String importId,
+                                                     @RequestParam String title) {
 
         String uri = UriBuilder.fromUri("/geoserver")
                 .path("wcs")
