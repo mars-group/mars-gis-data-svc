@@ -4,7 +4,6 @@ package org.mars_group.gisimport.import_controller;
 import de.haw_hamburg.mars.mars_group.metadataclient.MetadataClient;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
-import org.apache.commons.io.FilenameUtils;
 import org.geotools.referencing.CRS;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
@@ -73,7 +72,7 @@ class GeoServerImport {
             switch (uploadType) {
                 case ASC:
                     // We converted the Ascii Grid to GeoTiff, so this imports Geotiff
-                    file = new File(uploadDir + File.separator + FilenameUtils.getBaseName(uploadFilename) + ".tif");
+                    file = new File(uploadDir + File.separator + gisValidator.getDatasetName() + ".tif");
                     result = publisher.publishGeoTIFF(importId, "Websuite_Asc", layername, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
                     map.put("uri", downloadController.downloadRasterFile(importId, layername));
@@ -84,7 +83,7 @@ class GeoServerImport {
                     map.put("uri", downloadController.downloadVectorFile(importId, gisValidator.getDatasetName()));
                     break;
                 case TIF:
-                    file = new File(uploadDir + File.separator + FilenameUtils.getBaseName(uploadFilename) + ".tif");
+                    file = new File(uploadDir + File.separator + gisValidator.getDatasetName() + ".tif");
                     result = publisher.publishGeoTIFF(importId, "Websuite_GeoTiff", layername, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
                     map.put("uri", downloadController.downloadRasterFile(importId, layername));
