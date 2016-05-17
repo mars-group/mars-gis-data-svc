@@ -34,8 +34,6 @@ class GisValidator {
     private boolean zipHasDirectory;
     private String uploadDir;
     private UploadType uploadType;
-    private String datasetDirectoryPath;
-    private String datasetDirectoryName;
     private String datasetName;
     private CoordinateReferenceSystem coordinateReferenceSystem;
 
@@ -50,31 +48,34 @@ class GisValidator {
         this.uploadDir = uploadDir;
         this.uploadType = determinUploadType(filename);
 
-        datasetDirectoryName = FilenameUtils.getBaseName(filename);
+        String fileBasename = FilenameUtils.getBaseName(filename);
         String fileExtension = FilenameUtils.getExtension(filename);
 
         switch (fileExtension) {
             case "asc":
+                datasetName = fileBasename;
                 validateAsc(filename);
                 break;
 
             case "tif":
+                datasetName = fileBasename;
                 validateGeoTiff(filename);
                 break;
 
             case "zip":
                 zipHasDirectory = zipHasDirectory(filename);
-                datasetDirectoryPath = unzip(filename);
+                datasetName = findDatasetName(filename, uploadType);
+                String baseFilename = uploadDir + File.separator + datasetName;
 
                 switch (this.uploadType) {
                     case ASC:
-                        validateAsc(datasetDirectoryPath + File.separator + datasetDirectoryName + ".asc");
+                        validateAsc(baseFilename + ".asc");
                         break;
                     case TIF:
-                        validateGeoTiff(datasetDirectoryPath + File.separator + datasetDirectoryName + ".tif");
+                        validateGeoTiff(baseFilename + ".tif");
                         break;
                     case SHP:
-                        validateShp();
+                        validateShp(baseFilename + ".shp");
                         break;
                 }
                 break;
@@ -104,8 +105,6 @@ class GisValidator {
         GeoTiffWriter writer = new GeoTiffWriter(new File(uploadDir + File.separator + FilenameUtils.getBaseName(filename) + ".tif"));
         writer.write(coverage, null);
         writer.dispose();
-
-        datasetName = datasetDirectoryName;
     }
 
     private void validateGeoTiff(String filename) throws GisValidationException, IOException {
@@ -113,17 +112,14 @@ class GisValidator {
             throw new GisValidationException("The file extension does not match the upload type!");
         }
         coordinateReferenceSystem = initRasterFile(new GeoTiffReader(filename));
-        datasetName = datasetDirectoryName;
     }
 
-    private void validateShp() throws GisImportException, IOException {
-        datasetName = findShpDatasetName();
-
+    private void validateShp(String filename) throws GisImportException, IOException {
         if (zipHasDirectory) {
-            createZipwithoutDirectory();
+            createZipWithoutDirectory(filename);
         }
 
-        File file = new File(datasetDirectoryPath + File.separator + datasetName + ".shp");
+        File file = new File(filename);
         coordinateReferenceSystem = initShpFile(file);
     }
 
@@ -174,27 +170,32 @@ class GisValidator {
         return false;
     }
 
-    private String unzip(String filename) throws IOException {
-        String unzipDirectory = uploadDir;
-
+    private void unzip(String filename) throws IOException {
         UnzipUtility unzipper = new UnzipUtility();
-        unzipper.unzip(filename, unzipDirectory);
-
-        return unzipDirectory;
+        unzipper.unzip(filename, uploadDir);
     }
 
-    private void createZipwithoutDirectory() {
+    private void createZipWithoutDirectory(String filename) {
         ZipWriter zw = new ZipWriter();
-        String path = datasetDirectoryPath + File.separator + datasetDirectoryName;
-        zw.createZip(path, path + ".zip");
+        String path = FilenameUtils.getBaseName(filename) + ".zip";
+        zw.createZip(path, path);
     }
 
-    private String findShpDatasetName() throws GisImportException {
-        File folder = new File(datasetDirectoryPath);
-        File[] files = folder.listFiles();
+    private String findDatasetName(String filename, UploadType uploadType) throws GisImportException, IOException {
+        String fileExtension = FilenameUtils.getExtension(filename);
+        String fileBasename = FilenameUtils.getBaseName(filename);
+
+        if (!fileExtension.equalsIgnoreCase("zip")) {
+            return fileBasename;
+        }
+
+        unzip(filename);
+
+        File[] files = new File(uploadDir).listFiles();
         if (files != null) {
             for (File f : files) {
-                if (FilenameUtils.getExtension(f.getName()).equalsIgnoreCase("shp")) {
+                System.out.println(f.getName());
+                if (FilenameUtils.getExtension(f.getName()).equalsIgnoreCase(uploadType.toString())) {
                     return FilenameUtils.getBaseName(f.getName());
                 }
             }
