@@ -32,29 +32,30 @@ public class GisValidatorTest {
     }
 
     @Test
-    public void shpConstructor() {
-        String filename = "src/test/resources/shapefile.zip";
-        assertTrue(filename + " doesn't exists!", new File(filename).exists());
-
-        try {
-            GisValidator gisValidator = new GisValidator(uploadDir, filename);
-
-            CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
-            assertTrue(crs.getName().toString().equals("Geographic"));
-            assertTrue(gisValidator.getDatasetName().equals("pop_pnt"));
-
-        } catch (IOException | GisValidationException | GisImportException e) {
-            e.printStackTrace();
-            fail();
-        } finally {
-            cleanUp();
-            assertFalse(new File(uploadDir).exists());
-        }
+    public void asciiGridTest() throws FactoryException {
+        String filename = "src/test/resources/ascii_grid.asc";
+        asciiGridTest(filename);
     }
 
     @Test
-    public void arcGridConstructor() throws FactoryException {
-        String filename = "src/test/resources/ascii_grid.asc";
+    public void asciiGridPeriodeTest() throws FactoryException {
+        String filename = "src/test/resources/ascii_grid.period.asc";
+        asciiGridTest(filename);
+    }
+
+    @Test
+    public void asciiGridZipTest() throws FactoryException {
+        String filename = "src/test/resources/ascii_grid.zip";
+        asciiGridTest(filename);
+    }
+
+    @Test
+    public void asciiGridZipPeriodeTest() throws FactoryException {
+        String filename = "src/test/resources/ascii_grid.period.zip";
+        asciiGridTest(filename);
+    }
+
+    private void asciiGridTest(String filename) {
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
 
         try {
@@ -73,8 +74,30 @@ public class GisValidatorTest {
     }
 
     @Test
-    public void geoTiffConstructor() {
+    public void geoTiffTest() {
         String filename = "src/test/resources/geotiff.tif";
+        geoTiffTest(filename);
+    }
+
+    @Test
+    public void geoTiffZipTest() {
+        String filename = "src/test/resources/geotiff.zip";
+        geoTiffTest(filename);
+    }
+
+    @Test
+    public void geoTiffPeriodeTest() {
+        String filename = "src/test/resources/geotiff.period.tif";
+        geoTiffTest(filename);
+    }
+
+    @Test
+    public void geoTiffZipPeriodeTest() {
+        String filename = "src/test/resources/geotiff.period.zip";
+        geoTiffTest(filename);
+    }
+
+    private void geoTiffTest(String filename) {
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
 
         try {
@@ -82,6 +105,31 @@ public class GisValidatorTest {
 
             CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
             assertTrue(crs.getName().toString().equals("EPSG:NAD27 / UTM zone 13N"));
+
+        } catch (IOException | GisValidationException | GisImportException e) {
+            e.printStackTrace();
+            fail();
+        } finally {
+            cleanUp();
+            assertFalse(new File(uploadDir).exists());
+        }
+    }
+
+    @Test
+    public void shpTest() {
+        String filename = "src/test/resources/shapefile.zip";
+        shpPeriodTest(filename);
+    }
+
+    private void shpPeriodTest(String filename) {
+        assertTrue(filename + " doesn't exists!", new File(filename).exists());
+
+        try {
+            GisValidator gisValidator = new GisValidator(uploadDir, filename);
+
+            CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
+            assertTrue(crs.getName().toString().equals("Geographic"));
+            assertTrue(gisValidator.getDatasetName().equals("pop_pnt"));
 
         } catch (IOException | GisValidationException | GisImportException e) {
             e.printStackTrace();
