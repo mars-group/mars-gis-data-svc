@@ -1,7 +1,14 @@
 package org.mars_group.gisimport.import_controller;
 
-import de.haw_hamburg.mars.mars_group.core.ImportState;
-import de.haw_hamburg.mars.mars_group.metadataclient.MetadataClient;
+import static org.junit.Assert.assertTrue;
+
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+
 import org.apache.commons.io.FileUtils;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,13 +17,15 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.FileCopyUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.*;
-import java.net.MalformedURLException;
-
-import static org.junit.Assert.assertTrue;
+import de.haw_hamburg.mars.mars_group.core.ImportState;
+import de.haw_hamburg.mars.mars_group.metadataclient.MetadataClient;
 
 
 @RestController
@@ -49,7 +58,7 @@ class FileUploadController {
                                                @RequestParam String title,
                                                @RequestParam String filename) {
 
-        return restTemplate.execute("http://upload:3333/upload/" + importId, HttpMethod.GET, null,
+        return restTemplate.execute("http://file:3333/files/" + importId, HttpMethod.GET, null,
                 response -> {
                     try {
                         String specificUploadDir = uploadDir + File.separator + importId;
