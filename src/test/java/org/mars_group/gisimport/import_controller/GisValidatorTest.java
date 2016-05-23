@@ -12,6 +12,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.UUID;
 
 import static junit.framework.TestCase.assertFalse;
@@ -155,7 +156,7 @@ public class GisValidatorTest {
                 if (f.isDirectory()) {
                     System.out.println(f.getName());
                     try {
-                        FileUtils.deleteDirectory(f);
+                        Files.delete(f.toPath());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
