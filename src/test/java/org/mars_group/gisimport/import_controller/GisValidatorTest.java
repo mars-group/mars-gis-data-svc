@@ -3,6 +3,7 @@ package org.mars_group.gisimport.import_controller;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
@@ -19,7 +20,7 @@ import static org.junit.Assert.fail;
 
 public class GisValidatorTest {
 
-    private final String uploadDir = "upload-dir";
+    private final static String uploadDir = "upload-dir";
 
     public GisValidatorTest() {
         if (!new File(uploadDir).exists()) {
@@ -144,8 +145,8 @@ public class GisValidatorTest {
         return localUploadDir;
     }
 
-    @After
-    public void cleanUp() throws IOException {
+    @AfterClass
+    public static void cleanUp() throws IOException {
         File[] files = new File(uploadDir).listFiles();
         System.out.println("///////////////////////////////////////////////////////");
         if (files != null) {
