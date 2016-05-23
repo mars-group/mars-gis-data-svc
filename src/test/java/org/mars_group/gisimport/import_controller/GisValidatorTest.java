@@ -1,8 +1,23 @@
 package org.mars_group.gisimport.import_controller;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.Test;
+import org.mars_group.gisimport.exceptions.GisImportException;
+import org.mars_group.gisimport.exceptions.GisValidationException;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
+
+import static junit.framework.TestCase.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 public class GisValidatorTest {
 
-    /*private String uploadDir;
+    private String uploadDir;
 
     public GisValidatorTest() {
         String importId = UUID.randomUUID().toString();
@@ -132,8 +147,6 @@ public class GisValidatorTest {
             FileUtils.deleteDirectory(new File(uploadDir));
         } catch (IOException e) {
             e.printStackTrace();
-            fail();
         }
     }
-    */
 }
