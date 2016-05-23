@@ -1,8 +1,6 @@
 package org.mars_group.gisimport.import_controller;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.mars_group.gisimport.exceptions.GisImportException;
@@ -12,10 +10,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.UUID;
 
-import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -148,32 +144,24 @@ public class GisValidatorTest {
 
     @AfterClass
     public static void cleanUp() {
-        File[] files = new File(uploadDir).listFiles();
         System.out.println("///////////////////////////////////////////////////////");
+
+        File[] files = new File(uploadDir).listFiles();
         if (files != null) {
             System.out.println(files.length + " files found!");
             for (File f : files) {
-                if (f.isDirectory()) {
-                    System.out.println(f.getName());
-                    try {
-                        Files.delete(f.toPath());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                System.out.println(f.getName());
+                try {
+                    FileUtils.deleteDirectory(f);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         }
+
         File[] filesAfter = new File(uploadDir).listFiles();
         if (filesAfter != null) {
             System.out.println(filesAfter.length + " files left!");
-
-            if(filesAfter.length > 0) {
-                for (File f : filesAfter) {
-                    if (f.isDirectory()) {
-                        System.out.println(f.getName());
-                    }
-                }
-            }
         }
     }
 }
