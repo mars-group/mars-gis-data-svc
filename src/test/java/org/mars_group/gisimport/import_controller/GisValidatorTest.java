@@ -17,17 +17,9 @@ import static org.junit.Assert.fail;
 
 public class GisValidatorTest {
 
-    private String uploadDir;
+    private final String uploadDir = "upload-dir";
 
     public GisValidatorTest() {
-        String importId = UUID.randomUUID().toString();
-        uploadDir = "upload-dir";
-
-        if (!new File(uploadDir).exists()) {
-            assertTrue(new File(uploadDir).mkdir());
-        }
-
-        uploadDir += File.separator + importId;
         if (!new File(uploadDir).exists()) {
             assertTrue(new File(uploadDir).mkdir());
         }
@@ -60,8 +52,10 @@ public class GisValidatorTest {
     private void asciiGridTest(String filename) {
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
 
+        String localUploadDir = createUploadDir();
+
         try {
-            GisValidator gisValidator = new GisValidator(uploadDir, filename);
+            GisValidator gisValidator = new GisValidator(localUploadDir, filename);
 
             CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
             assertTrue(crs.getName().toString().equals("EPSG:NZGD49 / New Zealand Map Grid"));
@@ -70,8 +64,8 @@ public class GisValidatorTest {
             e.printStackTrace();
             fail();
         } finally {
-            cleanUp();
-            assertFalse(new File(uploadDir).exists());
+            cleanUp(localUploadDir);
+            assertFalse(new File(localUploadDir).exists());
         }
     }
 
@@ -102,8 +96,10 @@ public class GisValidatorTest {
     private void geoTiffTest(String filename) {
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
 
+        String localUploadDir = createUploadDir();
+
         try {
-            GisValidator gisValidator = new GisValidator(uploadDir, filename);
+            GisValidator gisValidator = new GisValidator(localUploadDir, filename);
 
             CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
             assertTrue(crs.getName().toString().equals("EPSG:NAD27 / UTM zone 13N"));
@@ -112,8 +108,8 @@ public class GisValidatorTest {
             e.printStackTrace();
             fail();
         } finally {
-            cleanUp();
-            assertFalse(new File(uploadDir).exists());
+            cleanUp(localUploadDir);
+            assertFalse(new File(localUploadDir).exists());
         }
     }
 
@@ -126,8 +122,10 @@ public class GisValidatorTest {
     private void shpPeriodTest(String filename) {
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
 
+        String localUploadDir = createUploadDir();
+
         try {
-            GisValidator gisValidator = new GisValidator(uploadDir, filename);
+            GisValidator gisValidator = new GisValidator(localUploadDir, filename);
 
             CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
             assertTrue(crs.getName().toString().equals("Geographic"));
@@ -137,14 +135,25 @@ public class GisValidatorTest {
             e.printStackTrace();
             fail();
         } finally {
-            cleanUp();
-            assertFalse(new File(uploadDir).exists());
+            cleanUp(localUploadDir);
+            assertFalse(new File(localUploadDir).exists());
         }
     }
 
-    private void cleanUp() {
+    private String createUploadDir() {
+        String importId = UUID.randomUUID().toString();
+        String localUploadDir = uploadDir + File.separator + importId;
+
+        if (!new File(localUploadDir).exists()) {
+            assertTrue(new File(localUploadDir).mkdir());
+        }
+
+        return localUploadDir;
+    }
+
+    private void cleanUp(String directory) {
         try {
-            FileUtils.deleteDirectory(new File(uploadDir));
+            FileUtils.deleteDirectory(new File(directory));
         } catch (IOException e) {
             e.printStackTrace();
         }
