@@ -146,7 +146,7 @@ public class GisValidatorTest {
     }
 
     @AfterClass
-    public static void cleanUp() throws IOException {
+    public static void cleanUp() {
         File[] files = new File(uploadDir).listFiles();
         System.out.println("///////////////////////////////////////////////////////");
         if (files != null) {
@@ -154,7 +154,11 @@ public class GisValidatorTest {
             for (File f : files) {
                 if (f.isDirectory()) {
                     System.out.println(f.getName());
-                    FileUtils.deleteDirectory(f);
+                    try {
+                        FileUtils.deleteDirectory(f);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
