@@ -158,5 +158,17 @@ public class GisValidatorTest {
                 }
             }
         }
+        File[] filesAfter = new File(uploadDir).listFiles();
+        if (filesAfter != null) {
+            System.out.println(filesAfter.length + " files left!");
+
+            if(filesAfter.length > 0) {
+                for (File f : filesAfter) {
+                    if (f.isDirectory()) {
+                        System.out.println(f.getName());
+                    }
+                }
+            }
+        }
     }
 }
