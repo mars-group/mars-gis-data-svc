@@ -194,7 +194,6 @@ class GisValidator {
         File[] files = new File(uploadDir).listFiles();
         if (files != null) {
             for (File f : files) {
-                System.out.println(f.getName());
                 if (FilenameUtils.getExtension(f.getName()).equalsIgnoreCase(uploadType.toString())) {
                     return FilenameUtils.getBaseName(f.getName());
                 }

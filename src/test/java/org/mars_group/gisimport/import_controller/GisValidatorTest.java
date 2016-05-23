@@ -1,6 +1,7 @@
 package org.mars_group.gisimport.import_controller;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.junit.Test;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
@@ -65,7 +66,6 @@ public class GisValidatorTest {
             fail();
         } finally {
             cleanUp(localUploadDir);
-            assertFalse(new File(localUploadDir).exists());
         }
     }
 
@@ -109,7 +109,6 @@ public class GisValidatorTest {
             fail();
         } finally {
             cleanUp(localUploadDir);
-            assertFalse(new File(localUploadDir).exists());
         }
     }
 
@@ -136,13 +135,12 @@ public class GisValidatorTest {
             fail();
         } finally {
             cleanUp(localUploadDir);
-            assertFalse(new File(localUploadDir).exists());
         }
     }
 
     private String createUploadDir() {
-        String importId = UUID.randomUUID().toString();
-        String localUploadDir = uploadDir + File.separator + importId;
+        String dataId = UUID.randomUUID().toString();
+        String localUploadDir = uploadDir + File.separator + dataId;
 
         if (!new File(localUploadDir).exists()) {
             assertTrue(new File(localUploadDir).mkdir());
@@ -152,8 +150,22 @@ public class GisValidatorTest {
     }
 
     private void cleanUp(String directory) {
+
+        // list dirs for debuging only
+        File[] files = new File(uploadDir).listFiles();
+        System.out.println("///////////////////////////////////////////////////////");
+        if (files != null) {
+            System.out.println(files.length + " files found!");
+            for (File f : files) {
+                if (f.isDirectory()) {
+                    System.out.println(f.getName());
+                }
+            }
+        }
+
         try {
             FileUtils.deleteDirectory(new File(directory));
+            assertFalse(new File(directory).exists());
         } catch (IOException e) {
             e.printStackTrace();
         }
