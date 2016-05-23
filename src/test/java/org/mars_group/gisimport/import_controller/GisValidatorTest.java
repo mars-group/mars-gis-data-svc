@@ -2,6 +2,7 @@ package org.mars_group.gisimport.import_controller;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.junit.After;
 import org.junit.Test;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
@@ -64,8 +65,6 @@ public class GisValidatorTest {
         } catch (IOException | GisValidationException | GisImportException e) {
             e.printStackTrace();
             fail();
-        } finally {
-            cleanUp(localUploadDir);
         }
     }
 
@@ -107,8 +106,6 @@ public class GisValidatorTest {
         } catch (IOException | GisValidationException | GisImportException e) {
             e.printStackTrace();
             fail();
-        } finally {
-            cleanUp(localUploadDir);
         }
     }
 
@@ -133,8 +130,6 @@ public class GisValidatorTest {
         } catch (IOException | GisValidationException | GisImportException e) {
             e.printStackTrace();
             fail();
-        } finally {
-            cleanUp(localUploadDir);
         }
     }
 
@@ -149,9 +144,8 @@ public class GisValidatorTest {
         return localUploadDir;
     }
 
-    private void cleanUp(String directory) {
-
-        // list dirs for debuging only
+    @After
+    public void cleanUp() throws IOException {
         File[] files = new File(uploadDir).listFiles();
         System.out.println("///////////////////////////////////////////////////////");
         if (files != null) {
@@ -159,15 +153,9 @@ public class GisValidatorTest {
             for (File f : files) {
                 if (f.isDirectory()) {
                     System.out.println(f.getName());
+                    FileUtils.deleteDirectory(f);
                 }
             }
-        }
-
-        try {
-            FileUtils.deleteDirectory(new File(directory));
-            assertFalse(new File(directory).exists());
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }
