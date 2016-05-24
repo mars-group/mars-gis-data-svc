@@ -144,24 +144,14 @@ public class GisValidatorTest {
 
     @AfterClass
     public static void cleanUp() {
-        System.out.println("///////////////////////////////////////////////////////");
-
         File[] files = new File(uploadDir).listFiles();
         if (files != null) {
-            System.out.println(files.length + " files found!");
             for (File f : files) {
-                System.out.println(f.getName());
                 try {
                     FileUtils.deleteDirectory(f);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (IOException ignored) {
                 }
             }
-        }
-
-        File[] filesAfter = new File(uploadDir).listFiles();
-        if (filesAfter != null) {
-            System.out.println(filesAfter.length + " files left!");
         }
     }
 }
