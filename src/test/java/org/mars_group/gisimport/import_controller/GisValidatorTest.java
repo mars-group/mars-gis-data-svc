@@ -2,6 +2,7 @@ package org.mars_group.gisimport.import_controller;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
@@ -32,7 +33,7 @@ public class GisValidatorTest {
     }
 
     @Test
-    public void asciiGridPeriodeTest() throws FactoryException {
+    public void asciiGridPeriodTest() throws FactoryException {
         String filename = "src/test/resources/ascii_grid.period.asc";
         asciiGridTest(filename);
     }
@@ -50,7 +51,7 @@ public class GisValidatorTest {
     }
 
     @Test
-    public void asciiGridZipPeriodeTest() throws FactoryException {
+    public void asciiGridZipPeriodTest() throws FactoryException {
         String filename = "src/test/resources/ascii_grid.period.zip";
         asciiGridTest(filename);
     }
@@ -85,7 +86,7 @@ public class GisValidatorTest {
     }
 
     @Test
-    public void geoTiffPeriodeTest() {
+    public void geoTiffPeriodTest() {
         String filename = "src/test/resources/geotiff.period.tif";
         geoTiffTest(filename);
     }
@@ -97,7 +98,7 @@ public class GisValidatorTest {
     }
 
     @Test
-    public void geoTiffZipPeriodeTest() {
+    public void geoTiffZipPeriodTest() {
         String filename = "src/test/resources/geotiff.period.zip";
         geoTiffTest(filename);
     }
