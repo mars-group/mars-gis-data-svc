@@ -38,6 +38,12 @@ public class GisValidatorTest {
     }
 
     @Test
+    public void asciiGridSpaceTest() throws FactoryException {
+        String filename = "src/test/resources/ascii_grid space.asc";
+        asciiGridTest(filename);
+    }
+
+    @Test
     public void asciiGridZipTest() throws FactoryException {
         String filename = "src/test/resources/ascii_grid.zip";
         asciiGridTest(filename);
@@ -85,6 +91,12 @@ public class GisValidatorTest {
     }
 
     @Test
+    public void geoTiffSpaceTest() {
+        String filename = "src/test/resources/geotiff space.tif";
+        geoTiffTest(filename);
+    }
+
+    @Test
     public void geoTiffZipPeriodeTest() {
         String filename = "src/test/resources/geotiff.period.zip";
         geoTiffTest(filename);
@@ -110,6 +122,12 @@ public class GisValidatorTest {
     @Test
     public void shpTest() {
         String filename = "src/test/resources/shapefile.zip";
+        shpPeriodTest(filename);
+    }
+
+    @Test
+    public void shpSpaceTest() {
+        String filename = "src/test/resources/shapefile space.zip";
         shpPeriodTest(filename);
     }
 
