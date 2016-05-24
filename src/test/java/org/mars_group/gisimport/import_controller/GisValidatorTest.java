@@ -20,7 +20,8 @@ public class GisValidatorTest {
 
     private final static String uploadDir = "upload-dir";
 
-    public GisValidatorTest() {
+    @BeforeClass
+    public static void createUploadDir() {
         if (!new File(uploadDir).exists()) {
             assertTrue(new File(uploadDir).mkdir());
         }
@@ -59,7 +60,7 @@ public class GisValidatorTest {
     private void asciiGridTest(String filename) {
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
 
-        String localUploadDir = createUploadDir();
+        String localUploadDir = createSpecificUploadDir();
 
         try {
             GisValidator gisValidator = new GisValidator(localUploadDir, filename);
@@ -106,7 +107,7 @@ public class GisValidatorTest {
     private void geoTiffTest(String filename) {
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
 
-        String localUploadDir = createUploadDir();
+        String localUploadDir = createSpecificUploadDir();
 
         try {
             GisValidator gisValidator = new GisValidator(localUploadDir, filename);
@@ -135,7 +136,7 @@ public class GisValidatorTest {
     private void shpPeriodTest(String filename) {
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
 
-        String localUploadDir = createUploadDir();
+        String localUploadDir = createSpecificUploadDir();
 
         try {
             GisValidator gisValidator = new GisValidator(localUploadDir, filename);
@@ -150,7 +151,7 @@ public class GisValidatorTest {
         }
     }
 
-    private String createUploadDir() {
+    private String createSpecificUploadDir() {
         String dataId = UUID.randomUUID().toString();
         String localUploadDir = uploadDir + File.separator + dataId;
 
@@ -163,14 +164,10 @@ public class GisValidatorTest {
 
     @AfterClass
     public static void cleanUp() {
-        File[] files = new File(uploadDir).listFiles();
-        if (files != null) {
-            for (File f : files) {
-                try {
-                    FileUtils.deleteDirectory(f);
-                } catch (IOException ignored) {
-                }
-            }
+        try {
+            FileUtils.deleteDirectory(new File(uploadDir));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
