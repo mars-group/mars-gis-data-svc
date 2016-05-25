@@ -46,7 +46,7 @@ class GisValidator {
      */
     GisValidator(String uploadDir, String filename) throws IOException, GisValidationException, GisImportException {
         this.uploadDir = uploadDir;
-        this.uploadType = determinUploadType(filename);
+        this.uploadType = determineUploadType(filename);
 
         String fileBasename = FilenameUtils.getBaseName(filename);
         String fileExtension = FilenameUtils.getExtension(filename);
@@ -116,6 +116,7 @@ class GisValidator {
 
     private void validateShp(String filename) throws GisImportException, IOException {
         if (zipHasDirectory) {
+            // TODO: make sure the right file is used if a directory is removed
             createZipWithoutDirectory(filename);
         }
 
@@ -123,7 +124,7 @@ class GisValidator {
         coordinateReferenceSystem = initShpFile(file);
     }
 
-    private UploadType determinUploadType(String filename) throws IOException, GisValidationException {
+    private UploadType determineUploadType(String filename) throws IOException, GisValidationException {
 
         String extension = FilenameUtils.getExtension(filename);
         switch (extension) {

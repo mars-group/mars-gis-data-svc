@@ -35,7 +35,7 @@ class GeoServerImport {
     @Autowired
     FileDownloadController downloadController;
 
-    void handleImport(String uploadDir, String uploadFilename, String importId, String layername) throws GisImportException, MalformedURLException {
+    void handleImport(String uploadDir, String uploadFilename, String dataId, String layername) throws GisImportException, MalformedURLException {
 
         File file = new File(uploadDir + File.separator + uploadFilename);
         GisValidator gisValidator;
@@ -59,7 +59,7 @@ class GeoServerImport {
 
         boolean result = false;
         GeoServerRESTPublisher publisher = geoServerInstance.getPublisher();
-        publisher.createWorkspace(importId);
+        publisher.createWorkspace(dataId);
 
         UploadType uploadType = gisValidator.getUploadType();
 
@@ -73,32 +73,32 @@ class GeoServerImport {
                 case ASC:
                     // We converted the Ascii Grid to GeoTiff, so this imports Geotiff
                     file = new File(uploadDir + File.separator + gisValidator.getDatasetName() + ".tif");
-                    result = publisher.publishGeoTIFF(importId, "Websuite_Asc", layername, file, crsCode,
+                    result = publisher.publishGeoTIFF(dataId, "Websuite_Asc", layername, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
-                    map.put("uri", downloadController.downloadRasterFile(importId, layername));
+                    map.put("uri", downloadController.downloadRasterFile(dataId, layername));
                     break;
                 case SHP:
-                    result = publisher.publishShp(importId, "Websuite_Shapefile", gisValidator.getDatasetName(),
+                    result = publisher.publishShp(dataId, "Websuite_Shapefile", gisValidator.getDatasetName(),
                             file, crsCode, "default_point");
-                    map.put("uri", downloadController.downloadVectorFile(importId, gisValidator.getDatasetName()));
+                    map.put("uri", downloadController.downloadVectorFile(dataId, gisValidator.getDatasetName()));
                     break;
                 case TIF:
                     file = new File(uploadDir + File.separator + gisValidator.getDatasetName() + ".tif");
-                    result = publisher.publishGeoTIFF(importId, "Websuite_GeoTiff", layername, file, crsCode,
+                    result = publisher.publishGeoTIFF(dataId, "Websuite_GeoTiff", layername, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
-                    map.put("uri", downloadController.downloadRasterFile(importId, layername));
+                    map.put("uri", downloadController.downloadRasterFile(dataId, layername));
                     break;
             }
-            metadataClient.updateMetaData(importId, map);
+            metadataClient.updateMetaData(dataId, map);
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            publisher.removeWorkspace(importId, false);
+            publisher.removeWorkspace(dataId, false);
             throw new GisImportException(e.getMessage());
         }
 
         if (!result) {
-            publisher.removeWorkspace(importId, false);
+            publisher.removeWorkspace(dataId, false);
             throw new GisImportException(uploadFilename + ": error inside the GeoServer! Import failed");
         }
     }
