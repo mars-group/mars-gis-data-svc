@@ -8,8 +8,8 @@ import org.geotools.referencing.CRS;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
 import org.mars_group.gisimport.export_controller.FileDownloadController;
+import org.mars_group.gisimport.util.DataType;
 import org.mars_group.gisimport.util.GeoServerInstance;
-import org.mars_group.gisimport.util.UploadType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,15 +61,15 @@ class GeoServerImport {
         GeoServerRESTPublisher publisher = geoServerInstance.getPublisher();
         publisher.createWorkspace(dataId);
 
-        UploadType uploadType = gisValidator.getUploadType();
+        DataType dataType = gisValidator.getDataType();
 
         MetadataClient metadataClient = MetadataClient.getInstance(restTemplate, "http://metadata:4444");
 
         Map<String, Object> map = new HashMap<>();
-        map.put("type", uploadType.getName());
+        map.put("type", dataType.getName());
 
         try {
-            switch (uploadType) {
+            switch (dataType) {
                 case ASC:
                     // We converted the Ascii Grid to GeoTiff, so this imports Geotiff
                     file = new File(uploadDir + File.separator + gisValidator.getDatasetName() + ".tif");

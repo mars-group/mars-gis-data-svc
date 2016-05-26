@@ -13,8 +13,8 @@ import org.geotools.gce.geotiff.GeoTiffWriter;
 import org.geotools.referencing.CRS;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
+import org.mars_group.gisimport.util.DataType;
 import org.mars_group.gisimport.util.UnzipUtility;
-import org.mars_group.gisimport.util.UploadType;
 import org.mars_group.gisimport.util.ZipWriter;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -33,7 +33,7 @@ import java.util.zip.ZipFile;
 class GisValidator {
     private boolean zipHasDirectory;
     private String uploadDir;
-    private UploadType uploadType;
+    private DataType dataType;
     private String datasetName;
     private CoordinateReferenceSystem coordinateReferenceSystem;
 
@@ -46,7 +46,7 @@ class GisValidator {
      */
     GisValidator(String uploadDir, String filename) throws IOException, GisValidationException, GisImportException {
         this.uploadDir = uploadDir;
-        this.uploadType = determineUploadType(filename);
+        this.dataType = determineDataType(filename);
 
         String fileBasename = FilenameUtils.getBaseName(filename);
         String fileExtension = FilenameUtils.getExtension(filename);
@@ -64,10 +64,10 @@ class GisValidator {
 
             case "zip":
                 zipHasDirectory = zipHasDirectory(filename);
-                datasetName = findDatasetName(filename, uploadType);
+                datasetName = findDatasetName(filename, dataType);
                 String baseFilename = uploadDir + File.separator + datasetName;
 
-                switch (this.uploadType) {
+                switch (this.dataType) {
                     case ASC:
                         validateAsc(baseFilename + ".asc");
                         break;
@@ -86,7 +86,7 @@ class GisValidator {
     }
 
     private void validateAsc(String filename) throws IOException, GisValidationException {
-        if (!uploadType.equals(UploadType.ASC)) {
+        if (!dataType.equals(DataType.ASC)) {
             throw new GisValidationException("The file extension does not match the upload type!");
         }
 
@@ -108,7 +108,7 @@ class GisValidator {
     }
 
     private void validateGeoTiff(String filename) throws GisValidationException, IOException {
-        if (!uploadType.equals(UploadType.TIF)) {
+        if (!dataType.equals(DataType.TIF)) {
             throw new GisValidationException("The file extension does not match the upload type!");
         }
         coordinateReferenceSystem = initRasterFile(new GeoTiffReader(filename));
@@ -124,15 +124,15 @@ class GisValidator {
         coordinateReferenceSystem = initShpFile(file);
     }
 
-    private UploadType determineUploadType(String filename) throws IOException, GisValidationException {
+    private DataType determineDataType(String filename) throws IOException, GisValidationException {
 
         String extension = FilenameUtils.getExtension(filename);
         switch (extension) {
             case "asc":
-                return UploadType.ASC;
+                return DataType.ASC;
 
             case "tif":
-                return UploadType.TIF;
+                return DataType.TIF;
 
             case "zip":
                 ZipFile zipFile = new ZipFile(filename);
@@ -143,11 +143,11 @@ class GisValidator {
 
                     switch (FilenameUtils.getExtension(zip.getName())) {
                         case "asc":
-                            return UploadType.ASC;
+                            return DataType.ASC;
                         case "tif":
-                            return UploadType.TIF;
+                            return DataType.TIF;
                         case "shp":
-                            return UploadType.SHP;
+                            return DataType.SHP;
                     }
                 }
                 break;
@@ -182,7 +182,7 @@ class GisValidator {
         zw.createZip(path, path);
     }
 
-    private String findDatasetName(String filename, UploadType uploadType) throws GisImportException, IOException {
+    private String findDatasetName(String filename, DataType dataType) throws GisImportException, IOException {
         String fileExtension = FilenameUtils.getExtension(filename);
         String fileBasename = FilenameUtils.getBaseName(filename);
 
@@ -195,7 +195,7 @@ class GisValidator {
         File[] files = new File(uploadDir).listFiles();
         if (files != null) {
             for (File f : files) {
-                if (FilenameUtils.getExtension(f.getName()).equalsIgnoreCase(uploadType.toString())) {
+                if (FilenameUtils.getExtension(f.getName()).equalsIgnoreCase(dataType.toString())) {
                     return FilenameUtils.getBaseName(f.getName());
                 }
             }
@@ -229,7 +229,7 @@ class GisValidator {
         return coordinateReferenceSystem;
     }
 
-    UploadType getUploadType() {
-        return uploadType;
+    DataType getDataType() {
+        return dataType;
     }
 }

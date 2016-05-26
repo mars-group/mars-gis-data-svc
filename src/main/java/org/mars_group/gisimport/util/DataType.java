@@ -1,11 +1,11 @@
 package org.mars_group.gisimport.util;
 
-public enum UploadType {
+public enum DataType {
     ASC("AsciiGrid"), TIF("Geotiff"), SHP("Shapefile");
 
     private String name;
 
-    UploadType(String name) {
+    DataType(String name) {
         this.name = name;
     }
 

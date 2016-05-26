@@ -11,7 +11,7 @@ public class FileDownloadController {
     /**
      * Download Vector files like shapefiles
      *
-     * @param dataId    id created during import
+     * @param dataId      id created during import
      * @param datasetName the name of the files inside the Zip file without the file extension.
      * @return relative uri to the file
      */
@@ -32,7 +32,7 @@ public class FileDownloadController {
      * Download raster files like AsciiGrid or GeoTiff
      *
      * @param dataId id created during import
-     * @param title    the title you specified during import
+     * @param title  the title you specified during import
      * @return relative uri to the file
      */
     @ResponseBody
