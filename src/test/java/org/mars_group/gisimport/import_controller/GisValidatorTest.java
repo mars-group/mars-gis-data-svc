@@ -6,7 +6,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
-import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.File;
@@ -28,33 +27,28 @@ public class GisValidatorTest {
     }
 
     @Test
-    public void asciiGridTest() throws FactoryException {
-        String filename = "src/test/resources/ascii_grid.asc";
-        asciiGridTest(filename);
+    public void asciiGridTest() {
+        asciiGridTest("src/test/resources/ascii_grid.asc");
     }
 
     @Test
-    public void asciiGridPeriodTest() throws FactoryException {
-        String filename = "src/test/resources/ascii_grid.period.asc";
-        asciiGridTest(filename);
+    public void asciiGridPeriodTest() {
+        asciiGridTest("src/test/resources/ascii_grid.period.asc");
     }
 
     @Test
-    public void asciiGridSpaceTest() throws FactoryException {
-        String filename = "src/test/resources/ascii_grid space.asc";
-        asciiGridTest(filename);
+    public void asciiGridSpaceTest() {
+        asciiGridTest("src/test/resources/ascii_grid space.asc");
     }
 
     @Test
-    public void asciiGridZipTest() throws FactoryException {
-        String filename = "src/test/resources/ascii_grid.zip";
-        asciiGridTest(filename);
+    public void asciiGridZipTest() {
+        asciiGridTest("src/test/resources/ascii_grid.zip");
     }
 
     @Test
-    public void asciiGridZipPeriodTest() throws FactoryException {
-        String filename = "src/test/resources/ascii_grid.period.zip";
-        asciiGridTest(filename);
+    public void asciiGridZipPeriodTest() {
+        asciiGridTest("src/test/resources/ascii_grid.period.zip");
     }
 
     private void asciiGridTest(String filename) {
@@ -76,32 +70,27 @@ public class GisValidatorTest {
 
     @Test
     public void geoTiffTest() {
-        String filename = "src/test/resources/geotiff.tif";
-        geoTiffTest(filename);
+        geoTiffTest("src/test/resources/geotiff.tif");
     }
 
     @Test
     public void geoTiffZipTest() {
-        String filename = "src/test/resources/geotiff.zip";
-        geoTiffTest(filename);
+        geoTiffTest("src/test/resources/geotiff.zip");
     }
 
     @Test
     public void geoTiffPeriodTest() {
-        String filename = "src/test/resources/geotiff.period.tif";
-        geoTiffTest(filename);
+        geoTiffTest("src/test/resources/geotiff.period.tif");
     }
 
     @Test
     public void geoTiffSpaceTest() {
-        String filename = "src/test/resources/geotiff space.tif";
-        geoTiffTest(filename);
+        geoTiffTest("src/test/resources/geotiff space.tif");
     }
 
     @Test
     public void geoTiffZipPeriodTest() {
-        String filename = "src/test/resources/geotiff.period.zip";
-        geoTiffTest(filename);
+        geoTiffTest("src/test/resources/geotiff.period.zip");
     }
 
     private void geoTiffTest(String filename) {
@@ -123,14 +112,27 @@ public class GisValidatorTest {
 
     @Test
     public void shpTest() {
-        String filename = "src/test/resources/shapefile.zip";
-        shpPeriodTest(filename);
+        shpPeriodTest("src/test/resources/shapefile.zip");
     }
 
     @Test
     public void shpSpaceTest() {
-        String filename = "src/test/resources/shapefile space.zip";
-        shpPeriodTest(filename);
+        shpPeriodTest("src/test/resources/shapefile space.zip");
+    }
+
+    @Test
+    public void shpDirectoryTest() {
+        shpPeriodTest("src/test/resources/shapefileDirectory.zip");
+    }
+
+    @Test
+    public void shpCapitalExtensionTest() {
+        shpPeriodTest("src/test/resources/shapefileCapitalExtension.ZIP");
+    }
+
+    @Test
+    public void shpOtherFileInsideTest() {
+        shpPeriodTest("src/test/resources/shapefileOtherFileInside.zip");
     }
 
     private void shpPeriodTest(String filename) {
@@ -143,7 +145,7 @@ public class GisValidatorTest {
 
             CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
             assertTrue(crs.getName().toString().equals("Geographic"));
-            assertTrue(gisValidator.getDatasetName().equals("pop_pnt"));
+            assertTrue(gisValidator.getDataName().equals("pop_pnt"));
 
         } catch (IOException | GisValidationException | GisImportException e) {
             e.printStackTrace();

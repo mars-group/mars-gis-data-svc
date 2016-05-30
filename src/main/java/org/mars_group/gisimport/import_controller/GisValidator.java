@@ -23,9 +23,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -33,8 +31,10 @@ import java.util.zip.ZipFile;
 class GisValidator {
     private boolean zipHasDirectory;
     private String uploadDir;
+    private String zipDirectoryName;
+    private List<String> unsupportedFiles = new ArrayList<>();
     private DataType dataType;
-    private String datasetName;
+    private String dataName;
     private CoordinateReferenceSystem coordinateReferenceSystem;
 
 
@@ -46,36 +46,45 @@ class GisValidator {
      */
     GisValidator(String uploadDir, String filename) throws IOException, GisValidationException, GisImportException {
         this.uploadDir = uploadDir;
-        this.dataType = determineDataType(filename);
 
-        String fileBasename = FilenameUtils.getBaseName(filename);
         String fileExtension = FilenameUtils.getExtension(filename);
 
-        switch (fileExtension) {
+        switch (fileExtension.toLowerCase()) {
             case "asc":
-                datasetName = fileBasename;
-                validateAsc(filename);
+                dataName = FilenameUtils.getName(filename);
+                dataType = DataType.ASC;
+                determineCrsForAsc(filename);
                 break;
 
             case "tif":
-                datasetName = fileBasename;
-                validateGeoTiff(filename);
+                dataName = FilenameUtils.getName(filename);
+                dataType = DataType.TIF;
+                determineCrsForTif(filename);
                 break;
 
             case "zip":
-                zipHasDirectory = zipHasDirectory(filename);
-                datasetName = findDatasetName(filename, dataType);
-                String baseFilename = uploadDir + File.separator + datasetName;
+                determineDataTypeAndCheckForDirectory(filename);
 
-                switch (this.dataType) {
+                unzip(filename);
+
+                if (unsupportedFiles.size() > 0) {
+                    removeUnsupportedFiles();
+                }
+
+                if (zipHasDirectory && dataType == DataType.SHP) {
+                    createZipWithoutDirectory(this.uploadDir + File.separator + dataName);
+                }
+
+
+                switch (dataType) {
                     case ASC:
-                        validateAsc(baseFilename + ".asc");
+                        determineCrsForAsc(this.uploadDir + File.separator + dataName);
                         break;
                     case TIF:
-                        validateGeoTiff(baseFilename + ".tif");
+                        determineCrsForTif(this.uploadDir + File.separator + dataName);
                         break;
                     case SHP:
-                        validateShp(baseFilename + ".shp");
+                        determineCrsForShp(this.uploadDir + File.separator + dataName);
                         break;
                 }
                 break;
@@ -85,11 +94,90 @@ class GisValidator {
         }
     }
 
-    private void validateAsc(String filename) throws IOException, GisValidationException {
-        if (!dataType.equals(DataType.ASC)) {
-            throw new GisValidationException("The file extension does not match the upload type!");
+    // this method does 2 things, but saves a whole iteration over the zip content
+    private void determineDataTypeAndCheckForDirectory(String filename) throws IOException, GisValidationException {
+        ZipFile zipFile = new ZipFile(filename);
+        Enumeration zipEntries = zipFile.entries();
+
+        /**
+         * We want to know if the files are inside a directory and detect the extension type.
+         * Since we walk though the zip from the root, we can stop looking for directories,
+         * once we found a valid extension.
+         */
+        while (zipEntries.hasMoreElements()) {
+            ZipEntry zip = (ZipEntry) zipEntries.nextElement();
+
+            if (zip.getName().contains("__MACOSX")) {
+                unsupportedFiles.add(zip.getName());
+                continue;
+            }
+
+            if (zip.isDirectory()) {
+                zipHasDirectory = true;
+                zipDirectoryName = zip.getName();
+                continue;
+            }
+
+            // determine data type and name
+            switch (FilenameUtils.getExtension(zip.getName()).toLowerCase()) {
+                case "asc":
+                    dataType = DataType.ASC;
+                    dataName = zip.getName();
+                    break;
+                case "tif":
+                    dataType = DataType.TIF;
+                    dataName = zip.getName();
+                    break;
+                case "shp":
+                    dataType = DataType.SHP;
+                    dataName = zip.getName();
+                    break;
+                // all files a ShapeFile can contain. Everything else is not allowed
+                case "shx":
+                case "dbf":
+                case "prj":
+                case "sbn":
+                case "sbx":
+                case "fbn":
+                case "fbx":
+                case "ain":
+                case "aih":
+                case "ixs":
+                case "mxs":
+                case "atx":
+                case "xml":
+                case "cpg":
+                case "qix":
+                    break;
+                default:
+                    unsupportedFiles.add(zip.getName());
+            }
         }
 
+        if (dataType == null) {
+            throw new GisValidationException("could not detect your upload type inside Zip file!");
+        }
+    }
+
+    private void unzip(String filename) throws IOException {
+        UnzipUtility unzipper = new UnzipUtility();
+        unzipper.unzip(filename, uploadDir);
+    }
+
+    private void removeUnsupportedFiles() {
+        for (String filename : unsupportedFiles) {
+            new File(uploadDir + File.separator + filename).delete();
+        }
+    }
+
+    private void createZipWithoutDirectory(String filename) {
+        String directory = uploadDir + File.separator + zipDirectoryName;
+        String outputFile = uploadDir + File.separator + FilenameUtils.getBaseName(filename) + ".zip";
+
+        new ZipWriter().createZip(directory, outputFile);
+    }
+
+    private void determineCrsForAsc(String filename) throws IOException, GisValidationException {
         ArcGridReader reader;
         try {
             Hints hints = new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode("EPSG:27200"));
@@ -107,110 +195,22 @@ class GisValidator {
         writer.dispose();
     }
 
-    private void validateGeoTiff(String filename) throws GisValidationException, IOException {
-        if (!dataType.equals(DataType.TIF)) {
-            throw new GisValidationException("The file extension does not match the upload type!");
-        }
+    private void determineCrsForTif(String filename) throws GisValidationException, IOException {
         coordinateReferenceSystem = initRasterFile(new GeoTiffReader(filename));
     }
 
-    private void validateShp(String filename) throws GisImportException, IOException {
-        if (zipHasDirectory) {
-            // TODO: make sure the right file is used if a directory is removed
-            createZipWithoutDirectory(filename);
-        }
-
-        File file = new File(filename);
-        coordinateReferenceSystem = initShpFile(file);
+    private void determineCrsForShp(String filename) throws GisImportException, IOException {
+        coordinateReferenceSystem = initShpFile(filename);
     }
 
-    private DataType determineDataType(String filename) throws IOException, GisValidationException {
-
-        String extension = FilenameUtils.getExtension(filename);
-        switch (extension) {
-            case "asc":
-                return DataType.ASC;
-
-            case "tif":
-                return DataType.TIF;
-
-            case "zip":
-                ZipFile zipFile = new ZipFile(filename);
-                Enumeration zipEntries = zipFile.entries();
-
-                while (zipEntries.hasMoreElements()) {
-                    ZipEntry zip = (ZipEntry) zipEntries.nextElement();
-
-                    switch (FilenameUtils.getExtension(zip.getName())) {
-                        case "asc":
-                            return DataType.ASC;
-                        case "tif":
-                            return DataType.TIF;
-                        case "shp":
-                            return DataType.SHP;
-                    }
-                }
-                break;
-        }
-
-        throw new GisValidationException("could not detect your upload type!");
-    }
-
-
-    // GeoServer can not handle directories
-    private boolean zipHasDirectory(String filename) throws IOException {
-        ZipFile zipFile = new ZipFile(filename);
-        Enumeration zipEntries = zipFile.entries();
-
-        while (zipEntries.hasMoreElements()) {
-            ZipEntry zip = (ZipEntry) zipEntries.nextElement();
-            if (zip.isDirectory() && !zip.getName().equals("__MACOSX/")) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void unzip(String filename) throws IOException {
-        UnzipUtility unzipper = new UnzipUtility();
-        unzipper.unzip(filename, uploadDir);
-    }
-
-    private void createZipWithoutDirectory(String filename) {
-        ZipWriter zw = new ZipWriter();
-        String path = FilenameUtils.getBaseName(filename) + ".zip";
-        zw.createZip(path, path);
-    }
-
-    private String findDatasetName(String filename, DataType dataType) throws GisImportException, IOException {
-        String fileExtension = FilenameUtils.getExtension(filename);
-        String fileBasename = FilenameUtils.getBaseName(filename);
-
-        if (!fileExtension.equalsIgnoreCase("zip")) {
-            return fileBasename;
-        }
-
-        unzip(filename);
-
-        File[] files = new File(uploadDir).listFiles();
-        if (files != null) {
-            for (File f : files) {
-                if (FilenameUtils.getExtension(f.getName()).equalsIgnoreCase(dataType.toString())) {
-                    return FilenameUtils.getBaseName(f.getName());
-                }
-            }
-        }
-        throw new GisImportException("Shp dataset name could not be detected!");
-    }
-
-    private CoordinateReferenceSystem initShpFile(File file) throws IOException {
+    private CoordinateReferenceSystem initShpFile(String filename) throws IOException {
         Map<String, Object> map = new HashMap<>();
 
-        map.put("url", file.toURI().toURL());
+        map.put("url", new File(filename).toURI().toURL());
         DataStore dataStore = DataStoreFinder.getDataStore(map);
 
-        datasetName = dataStore.getTypeNames()[0];
-        FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(datasetName);
+        dataName = dataStore.getTypeNames()[0];
+        FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(dataName);
 
         return source.getInfo().getCRS();
     }
@@ -221,8 +221,8 @@ class GisValidator {
         return coverage.getCoordinateReferenceSystem2D();
     }
 
-    String getDatasetName() {
-        return datasetName;
+    String getDataName() {
+        return dataName;
     }
 
     CoordinateReferenceSystem getCoordinateReferenceSystem() {

@@ -72,18 +72,18 @@ class GeoServerImport {
             switch (dataType) {
                 case ASC:
                     // We converted the Ascii Grid to GeoTiff, so this imports Geotiff
-                    file = new File(uploadDir + File.separator + gisValidator.getDatasetName() + ".tif");
+                    file = new File(uploadDir + File.separator + gisValidator.getDataName() + ".tif");
                     result = publisher.publishGeoTIFF(dataId, "Websuite_Asc", layername, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
                     map.put("uri", downloadController.downloadRasterFile(dataId, layername));
                     break;
                 case SHP:
-                    result = publisher.publishShp(dataId, "Websuite_Shapefile", gisValidator.getDatasetName(),
+                    result = publisher.publishShp(dataId, "Websuite_Shapefile", gisValidator.getDataName(),
                             file, crsCode, "default_point");
-                    map.put("uri", downloadController.downloadVectorFile(dataId, gisValidator.getDatasetName()));
+                    map.put("uri", downloadController.downloadVectorFile(dataId, gisValidator.getDataName()));
                     break;
                 case TIF:
-                    file = new File(uploadDir + File.separator + gisValidator.getDatasetName() + ".tif");
+                    file = new File(uploadDir + File.separator + gisValidator.getDataName() + ".tif");
                     result = publisher.publishGeoTIFF(dataId, "Websuite_GeoTiff", layername, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
                     map.put("uri", downloadController.downloadRasterFile(dataId, layername));
