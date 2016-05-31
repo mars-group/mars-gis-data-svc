@@ -11,7 +11,7 @@ public class FileDownloadController {
     /**
      * Download Vector files like shapefiles
      *
-     * @param dataId      id created during import
+     * @param dataId   id created during import
      * @param dataName the name of the files inside the Zip file without the file extension.
      * @return relative uri to the file
      */

@@ -35,7 +35,8 @@ class GeoServerImport {
     @Autowired
     FileDownloadController downloadController;
 
-    void handleImport(String uploadDir, String uploadFilename, String dataId, String layername) throws GisImportException, MalformedURLException {
+    void handleImport(String uploadDir, String uploadFilename, String dataId, String title) throws GisImportException, MalformedURLException {
+        title = title.replaceAll(" ", "");
 
         File file = new File(uploadDir + File.separator + uploadFilename);
         GisValidator gisValidator;
@@ -73,9 +74,9 @@ class GeoServerImport {
                 case ASC:
                     // We converted the Ascii Grid to GeoTiff, so this imports Geotiff
                     file = new File(uploadDir + File.separator + gisValidator.getDataName() + ".tif");
-                    result = publisher.publishGeoTIFF(dataId, "Websuite_Asc", layername, file, crsCode,
+                    result = publisher.publishGeoTIFF(dataId, "Websuite_Asc", title, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
-                    map.put("uri", downloadController.downloadRasterFile(dataId, layername));
+                    map.put("uri", downloadController.downloadRasterFile(dataId, title));
                     break;
                 case SHP:
                     result = publisher.publishShp(dataId, "Websuite_Shapefile", gisValidator.getDataName(),
@@ -84,9 +85,9 @@ class GeoServerImport {
                     break;
                 case TIF:
                     file = new File(uploadDir + File.separator + gisValidator.getDataName() + ".tif");
-                    result = publisher.publishGeoTIFF(dataId, "Websuite_GeoTiff", layername, file, crsCode,
+                    result = publisher.publishGeoTIFF(dataId, "Websuite_GeoTiff", title, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
-                    map.put("uri", downloadController.downloadRasterFile(dataId, layername));
+                    map.put("uri", downloadController.downloadRasterFile(dataId, title));
                     break;
             }
             metadataClient.updateMetaData(dataId, map);

@@ -84,7 +84,7 @@ class GisValidator {
                         determineCrsForTif(this.uploadDir + File.separator + dataName + ".tif");
                         break;
                     case SHP:
-                        determineCrsForShp(this.uploadDir + File.separator + dataName + ".zip");
+                        determineCrsForShp(this.uploadDir + File.separator + dataName);
                         break;
                 }
                 break;
