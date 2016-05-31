@@ -29,3 +29,41 @@ paths:
         description: "the name of the file, the user uploaded"
         required: true
         type: "string"
+  /download/vector:
+      get:
+        description: "Creates the meta data entry for a import id"
+        produces:
+        - "application/json"
+        responses:
+          200:
+            description: "string, where the file can be downloaded"
+        parameters:
+        - name: "dataId"
+          in: "formData"
+          description: "id created during import"
+          required: true
+          type: "string"
+        - name: "dataName"
+          in: "formData"
+          description: "the name of the files inside the Zip file without the file extension."
+          required: true
+          type: "string"
+  /download/raster:
+      get:
+        description: "Creates the meta data entry for a import id"
+        produces:
+        - "application/json"
+        responses:
+          200:
+            description: "string, where the file can be downloaded"
+        parameters:
+        - name: "dataId"
+          in: "formData"
+          description: "id created during import"
+          required: true
+          type: "string"
+        - name: "title"
+          in: "formData"
+          description: "title  the title you specified during import"
+          required: true
+          type: "string"

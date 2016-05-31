@@ -12,18 +12,18 @@ public class FileDownloadController {
      * Download Vector files like shapefiles
      *
      * @param dataId      id created during import
-     * @param datasetName the name of the files inside the Zip file without the file extension.
+     * @param dataName the name of the files inside the Zip file without the file extension.
      * @return relative uri to the file
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, value = "/download/vector")
-    public String downloadVectorFile(@RequestParam String dataId, @RequestParam String datasetName) {
+    public String downloadVectorFile(@RequestParam String dataId, @RequestParam String dataName) {
 
         return UriBuilder.fromUri("")
                 .path("wfs")
                 .queryParam("request", "GetFeature")
                 .queryParam("version", "2.0.0")
-                .queryParam("typeName", dataId + ":" + datasetName)
+                .queryParam("typeName", dataId + ":" + dataName)
                 .queryParam("outputFormat", "shape-zip")
                 .build().toString();
     }
