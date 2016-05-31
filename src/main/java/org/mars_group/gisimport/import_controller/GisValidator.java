@@ -51,13 +51,13 @@ class GisValidator {
 
         switch (fileExtension.toLowerCase()) {
             case "asc":
-                dataName = FilenameUtils.getName(filename);
+                dataName = FilenameUtils.getBaseName(filename);
                 dataType = DataType.ASC;
                 determineCrsForAsc(filename);
                 break;
 
             case "tif":
-                dataName = FilenameUtils.getName(filename);
+                dataName = FilenameUtils.getBaseName(filename);
                 dataType = DataType.TIF;
                 determineCrsForTif(filename);
                 break;
@@ -78,13 +78,13 @@ class GisValidator {
 
                 switch (dataType) {
                     case ASC:
-                        determineCrsForAsc(this.uploadDir + File.separator + dataName);
+                        determineCrsForAsc(this.uploadDir + File.separator + dataName + ".asc");
                         break;
                     case TIF:
-                        determineCrsForTif(this.uploadDir + File.separator + dataName);
+                        determineCrsForTif(this.uploadDir + File.separator + dataName + ".tif");
                         break;
                     case SHP:
-                        determineCrsForShp(this.uploadDir + File.separator + dataName);
+                        determineCrsForShp(this.uploadDir + File.separator + dataName + ".zip");
                         break;
                 }
                 break;
@@ -122,11 +122,11 @@ class GisValidator {
             switch (FilenameUtils.getExtension(zip.getName()).toLowerCase()) {
                 case "asc":
                     dataType = DataType.ASC;
-                    dataName = zip.getName();
+                    dataName = FilenameUtils.getBaseName(zip.getName());
                     break;
                 case "tif":
                     dataType = DataType.TIF;
-                    dataName = zip.getName();
+                    dataName = FilenameUtils.getBaseName(zip.getName());
                     break;
                 case "shp":
                     dataType = DataType.SHP;
