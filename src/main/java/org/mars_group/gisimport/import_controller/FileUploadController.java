@@ -59,8 +59,9 @@ class FileUploadController {
 
                     } catch (GisImportException e) {
                         e.printStackTrace();
+                        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
                     }
-                    return new ResponseEntity<>("saved", HttpStatus.CREATED);
+                    return new ResponseEntity<>("created", HttpStatus.CREATED);
                 });
     }
 
