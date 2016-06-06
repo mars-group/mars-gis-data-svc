@@ -2,5 +2,3 @@ version: '2'
 services:
     gisimport:
         build: .
-        environment:
-            Geoserver: remote
