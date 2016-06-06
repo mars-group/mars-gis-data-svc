@@ -1,16 +1,18 @@
 package org.mars_group.gisimport.util;
 
 
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
-import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
-import it.geosolutions.geoserver.rest.GeoServerRESTReader;
+import java.net.MalformedURLException;
+import java.util.Random;
+
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.net.MalformedURLException;
-import java.util.Random;
+import com.netflix.discovery.DiscoveryClient;
+import com.netflix.discovery.shared.Application;
+
+import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
+import it.geosolutions.geoserver.rest.GeoServerRESTReader;
 
 @Component
 public class GeoServerInstance {
@@ -22,7 +24,7 @@ public class GeoServerInstance {
     private final String PASSWORD = "geoserver";
 
     @Autowired
-    private EurekaClient discoveryClient;
+    private DiscoveryClient discoveryClient;
 
     private void init() throws MalformedURLException, GisImportException {
         URI = getRandomGeoServerInstanceUri();

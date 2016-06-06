@@ -1,9 +1,13 @@
 package org.mars_group.gisimport.import_controller;
 
 
-import de.haw_hamburg.mars.mars_group.metadataclient.MetadataClient;
-import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
-import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.geotools.referencing.CRS;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
@@ -16,12 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.HashMap;
-import java.util.Map;
+import de.haw_hamburg.mars.mars_group.metadataclient.MetadataClient;
+import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
+import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
 
 @Component
 class GeoServerImport {
@@ -64,7 +65,7 @@ class GeoServerImport {
 
         DataType dataType = gisValidator.getDataType();
 
-        MetadataClient metadataClient = MetadataClient.getInstance(restTemplate, "http://metadata:4444");
+        MetadataClient metadataClient = MetadataClient.getInstance(restTemplate, "http://metadata-service:4444");
 
         Map<String, Object> map = new HashMap<>();
         map.put("type", dataType.getName());

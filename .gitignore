@@ -1,3 +1,6 @@
 .idea
 target
 upload-dir
+.classpath
+.project
+.settings
