@@ -2,7 +2,6 @@ package org.mars_group.gisimport.import_controller;
 
 import org.apache.commons.io.FilenameUtils;
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.io.GridCoverage2DReader;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureSource;
@@ -10,6 +9,7 @@ import org.geotools.factory.Hints;
 import org.geotools.gce.arcgrid.ArcGridReader;
 import org.geotools.gce.geotiff.GeoTiffReader;
 import org.geotools.gce.geotiff.GeoTiffWriter;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
@@ -21,9 +21,11 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -35,6 +37,8 @@ class GisValidator {
     private List<String> unsupportedFiles = new ArrayList<>();
     private DataType dataType;
     private String dataName;
+    private double[] topRightBound;
+    private double[] bottomLeftBound;
     private CoordinateReferenceSystem coordinateReferenceSystem;
 
 
@@ -46,6 +50,8 @@ class GisValidator {
      */
     GisValidator(String uploadDir, String filename) throws IOException, GisValidationException, GisImportException {
         this.uploadDir = uploadDir;
+        topRightBound = new double[2];
+        bottomLeftBound = new double[2];
 
         String fileExtension = FilenameUtils.getExtension(filename);
 
@@ -53,13 +59,13 @@ class GisValidator {
             case "asc":
                 dataName = FilenameUtils.getBaseName(filename);
                 dataType = DataType.ASC;
-                determineCrsForAsc(filename);
+                coordinateReferenceSystem = initAscFile(filename);
                 break;
 
             case "tif":
                 dataName = FilenameUtils.getBaseName(filename);
                 dataType = DataType.TIF;
-                determineCrsForTif(filename);
+                coordinateReferenceSystem = initGeoTiffFile(filename);
                 break;
 
             case "zip":
@@ -75,16 +81,16 @@ class GisValidator {
                     createZipWithoutDirectory(this.uploadDir + File.separator + dataName);
                 }
 
-
+                String fileBasename = this.uploadDir + File.separator + dataName;
                 switch (dataType) {
                     case ASC:
-                        determineCrsForAsc(this.uploadDir + File.separator + dataName + ".asc");
+                        coordinateReferenceSystem = initAscFile(fileBasename + ".asc");
                         break;
                     case TIF:
-                        determineCrsForTif(this.uploadDir + File.separator + dataName + ".tif");
+                        coordinateReferenceSystem = initGeoTiffFile(fileBasename + ".tif");
                         break;
                     case SHP:
-                        determineCrsForShp(this.uploadDir + File.separator + dataName);
+                        coordinateReferenceSystem = initShapeFile(fileBasename);
                         break;
                 }
                 break;
@@ -177,7 +183,7 @@ class GisValidator {
         new ZipWriter().createZip(directory, outputFile);
     }
 
-    private void determineCrsForAsc(String filename) throws IOException, GisValidationException {
+    private CoordinateReferenceSystem initAscFile(String filename) throws IOException, GisValidationException {
         ArcGridReader reader;
         try {
             Hints hints = new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode("EPSG:27200"));
@@ -188,22 +194,25 @@ class GisValidator {
         }
         GridCoverage2D coverage = reader.read(null);
 
-        coordinateReferenceSystem = coverage.getCoordinateReferenceSystem2D();
-
         GeoTiffWriter writer = new GeoTiffWriter(new File(uploadDir + File.separator + FilenameUtils.getBaseName(filename) + ".tif"));
         writer.write(coverage, null);
         writer.dispose();
+
+        setBounds(coverage.getGridGeometry().getEnvelope2D().getBounds());
+
+        return coverage.getCoordinateReferenceSystem2D();
+
     }
 
-    private void determineCrsForTif(String filename) throws GisValidationException, IOException {
-        coordinateReferenceSystem = initRasterFile(new GeoTiffReader(filename));
+    private CoordinateReferenceSystem initGeoTiffFile(String filename) throws IOException {
+        GridCoverage2D coverage = new GeoTiffReader(filename).read(null);
+
+        setBounds(coverage.getGridGeometry().getEnvelope2D().getBounds());
+
+        return coverage.getCoordinateReferenceSystem2D();
     }
 
-    private void determineCrsForShp(String filename) throws GisImportException, IOException {
-        coordinateReferenceSystem = initShpFile(filename);
-    }
-
-    private CoordinateReferenceSystem initShpFile(String filename) throws IOException {
+    private CoordinateReferenceSystem initShapeFile(String filename) throws IOException {
         Map<String, Object> map = new HashMap<>();
 
         map.put("url", new File(filename).toURI().toURL());
@@ -212,13 +221,21 @@ class GisValidator {
         dataName = dataStore.getTypeNames()[0];
         FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(dataName);
 
+        setBounds(source.getBounds());
+
         return source.getInfo().getCRS();
     }
 
-    private <T extends GridCoverage2DReader> CoordinateReferenceSystem initRasterFile(T reader) throws IOException {
-        GridCoverage2D coverage = reader.read(null);
+    private void setBounds(ReferencedEnvelope bounds) {
+        topRightBound = bounds.getUpperCorner().getCoordinate();
+        bottomLeftBound = bounds.getLowerCorner().getCoordinate();
+    }
 
-        return coverage.getCoordinateReferenceSystem2D();
+    private void setBounds(Rectangle bounds) {
+        topRightBound[0] = bounds.getMaxX();
+        topRightBound[1] = bounds.getMaxY();
+        bottomLeftBound[0] = bounds.getMinX();
+        bottomLeftBound[1] = bounds.getMinY();
     }
 
     String getDataName() {
@@ -231,5 +248,13 @@ class GisValidator {
 
     DataType getDataType() {
         return dataType;
+    }
+
+    public double[] getTopRightBound() {
+        return topRightBound;
+    }
+
+    public double[] getBottomLeftBound() {
+        return bottomLeftBound;
     }
 }

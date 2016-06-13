@@ -1,18 +1,16 @@
 package org.mars_group.gisimport.util;
 
 
-import java.net.MalformedURLException;
-import java.util.Random;
-
+import com.netflix.discovery.DiscoveryClient;
+import com.netflix.discovery.shared.Application;
+import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
+import it.geosolutions.geoserver.rest.GeoServerRESTReader;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.netflix.discovery.DiscoveryClient;
-import com.netflix.discovery.shared.Application;
-
-import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
-import it.geosolutions.geoserver.rest.GeoServerRESTReader;
+import java.net.MalformedURLException;
+import java.util.Random;
 
 @Component
 public class GeoServerInstance {
