@@ -44,13 +44,12 @@ class FileUploadController {
                 String specificUploadDir = uploadDir + File.separator + dataId;
 
                 saveFile(response.getBody(), specificUploadDir, filename);
-                handleUpload(title, filename, dataId, specificUploadDir);
+                return handleUpload(title, filename, dataId, specificUploadDir);
 
             } catch (GisImportException e) {
                 e.printStackTrace();
                 return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
             }
-            return new ResponseEntity<>("created", HttpStatus.CREATED);
         });
     }
 
