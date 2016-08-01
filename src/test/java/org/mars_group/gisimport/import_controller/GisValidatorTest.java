@@ -1,6 +1,5 @@
 package org.mars_group.gisimport.import_controller;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -10,6 +9,10 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 import static org.junit.Assert.assertTrue;
@@ -167,7 +170,9 @@ public class GisValidatorTest {
     @AfterClass
     public static void cleanUp() {
         try {
-            FileUtils.deleteDirectory(new File(uploadDir));
+            Files.walk(Paths.get(uploadDir), FileVisitOption.FOLLOW_LINKS)
+                    .map(Path::toFile)
+                    .forEach(File::delete);
         } catch (IOException e) {
             e.printStackTrace();
         }
