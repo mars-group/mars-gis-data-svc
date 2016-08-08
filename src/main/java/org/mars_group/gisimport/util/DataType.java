@@ -1,7 +1,7 @@
 package org.mars_group.gisimport.util;
 
 public enum DataType {
-    ASC("AsciiGrid"), TIF("Geotiff"), SHP("Shapefile");
+    ASC("asciigrid"), TIF("geotiff"), SHP("shapefile");
 
     private String name;
 

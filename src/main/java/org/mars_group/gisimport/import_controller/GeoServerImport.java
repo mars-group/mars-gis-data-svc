@@ -26,14 +26,21 @@ import java.util.Map;
 @Component
 class GeoServerImport {
 
-    @Autowired
-    GeoServerInstance geoServerInstance;
-
-    @Autowired
+    private final
     RestTemplate restTemplate;
 
-    @Autowired
+    private final
+    GeoServerInstance geoServerInstance;
+
+    private final
     FileDownloadController downloadController;
+
+    @Autowired
+    public GeoServerImport(RestTemplate restTemplate, GeoServerInstance geoServerInstance, FileDownloadController downloadController) {
+        this.restTemplate = restTemplate;
+        this.geoServerInstance = geoServerInstance;
+        this.downloadController = downloadController;
+    }
 
     void handleImport(String uploadDir, String uploadFilename, String dataId, String title) throws GisImportException, MalformedURLException {
         title = title.replaceAll(" ", "");

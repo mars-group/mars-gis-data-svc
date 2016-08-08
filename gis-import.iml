@@ -59,8 +59,6 @@
     <orderEntry type="library" name="Maven: org.springframework.cloud:spring-cloud-starter-eureka:1.0.0.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.cloud:spring-cloud-starter:1.0.0.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.cloud:spring-cloud-config-client:1.0.0.RELEASE" level="project" />
-    <orderEntry type="library" name="Maven: org.springframework.security:spring-security-crypto:4.0.4.RELEASE" level="project" />
-    <orderEntry type="library" name="Maven: org.springframework.cloud:spring-cloud-commons:1.0.0.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.cloud:spring-cloud-netflix-core:1.0.0.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: com.netflix.eureka:eureka-client:1.1.147" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.codehaus.jettison:jettison:1.2" level="project" />
@@ -191,5 +189,7 @@
     <orderEntry type="library" name="Maven: org.geotools:gt-epsg-hsql:14.3" level="project" />
     <orderEntry type="library" name="Maven: org.hsqldb:hsqldb:2.3.3" level="project" />
     <orderEntry type="library" name="Maven: com.sun.jersey:jersey-core:1.13" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework.cloud:spring-cloud-commons:1.1.1.RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework.security:spring-security-crypto:4.0.4.RELEASE" level="project" />
   </component>
 </module>

@@ -22,11 +22,17 @@ class FileUploadController {
 
     private static final String uploadDir = "upload-dir";
 
-    @Autowired
+    private final
+    RestTemplate restTemplate;
+
+    private final
     GeoServerImport gsImport;
 
     @Autowired
-    RestTemplate restTemplate;
+    public FileUploadController(RestTemplate restTemplate, GeoServerImport gsImport) {
+        this.restTemplate = restTemplate;
+        this.gsImport = gsImport;
+    }
 
     /**
      * import Geo files
