@@ -1,7 +1,7 @@
 package org.mars_group.gisimport.import_controller;
 
-import de.haw_hamburg.mars.mars_group.core.ImportState;
-import de.haw_hamburg.mars.mars_group.metadataclient.MetadataClient;
+import org.mars_group.core.ImportState;
+import org.mars_group.metadataclient.MetadataClient;
 import org.apache.commons.io.FileUtils;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.springframework.beans.factory.annotation.Autowired;

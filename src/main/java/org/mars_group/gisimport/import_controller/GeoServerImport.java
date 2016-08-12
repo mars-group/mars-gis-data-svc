@@ -1,7 +1,7 @@
 package org.mars_group.gisimport.import_controller;
 
 
-import de.haw_hamburg.mars.mars_group.metadataclient.MetadataClient;
+import org.mars_group.metadataclient.MetadataClient;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
 import org.geotools.referencing.CRS;
