@@ -8,4 +8,5 @@ docker-compose -f docker-compose_dev.yml build
 cd ../marscloudinanutshell
 docker-compose -f develop.yml stop gisimport
 docker-compose -f develop.yml rm -f gisimport
-docker-compose -f develop.yml up gisimport
+docker-compose -f develop.yml up -d gisimport
+docker-compose -f develop.yml logs -f gisimport
