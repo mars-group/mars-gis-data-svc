@@ -5,7 +5,7 @@
 
 mvn package
 docker-compose -f docker-compose_dev.yml build
-cd ../marscloudinanutshell
+cd ../mars-cloudinanutshell
 docker-compose -f develop.yml stop gisimport
 docker-compose -f develop.yml rm -f gisimport
 docker-compose -f develop.yml up -d gisimport
