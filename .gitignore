@@ -4,3 +4,4 @@ upload-dir
 .classpath
 .project
 .settings
+*.iml
