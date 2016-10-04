@@ -1,7 +1,7 @@
 package org.mars_group.gisimport.import_controller;
 
 
-import org.mars_group.metadataclient.MetadataClient;
+import com.netflix.discovery.EurekaClient;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
 import org.geotools.referencing.CRS;
@@ -10,6 +10,7 @@ import org.mars_group.gisimport.exceptions.GisValidationException;
 import org.mars_group.gisimport.export_controller.FileDownloadController;
 import org.mars_group.gisimport.util.DataType;
 import org.mars_group.gisimport.util.GeoServerInstance;
+import org.mars_group.metadataclient.MetadataClient;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,20 +27,17 @@ import java.util.Map;
 @Component
 class GeoServerImport {
 
-    private final
-    RestTemplate restTemplate;
-
-    private final
-    GeoServerInstance geoServerInstance;
-
-    private final
-    FileDownloadController downloadController;
+    private final RestTemplate restTemplate;
+    private final GeoServerInstance geoServerInstance;
+    private final FileDownloadController downloadController;
+    private final EurekaClient eurekaClient;
 
     @Autowired
-    public GeoServerImport(RestTemplate restTemplate, GeoServerInstance geoServerInstance, FileDownloadController downloadController) {
+    public GeoServerImport(RestTemplate restTemplate, GeoServerInstance geoServerInstance, FileDownloadController downloadController, EurekaClient eurekaClient) {
         this.restTemplate = restTemplate;
         this.geoServerInstance = geoServerInstance;
         this.downloadController = downloadController;
+        this.eurekaClient = eurekaClient;
     }
 
     void handleImport(String uploadDir, String uploadFilename, String dataId, String title) throws GisImportException, MalformedURLException {
@@ -71,7 +69,7 @@ class GeoServerImport {
 
         DataType dataType = gisValidator.getDataType();
 
-        MetadataClient metadataClient = MetadataClient.getInstance(restTemplate, "http://metadata-service:4444");
+        MetadataClient metadataClient = MetadataClient.getInstance(restTemplate, eurekaClient);
 
         Map<String, Double> topLeftBound = new HashMap<>();
         topLeftBound.put("lat", gisValidator.getTopRightBound()[0]);
@@ -110,7 +108,7 @@ class GeoServerImport {
                     metadata.put("uri", downloadController.downloadRasterFile(dataId, title));
                     break;
             }
-            metadataClient.updateMetaData(dataId, metadata);
+            metadataClient.updateMetadata(dataId, metadata);
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();

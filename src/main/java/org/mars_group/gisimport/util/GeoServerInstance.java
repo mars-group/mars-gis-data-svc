@@ -1,7 +1,7 @@
 package org.mars_group.gisimport.util;
 
 
-import com.netflix.discovery.DiscoveryClient;
+import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import it.geosolutions.geoserver.rest.GeoServerRESTReader;
@@ -22,7 +22,7 @@ public class GeoServerInstance {
     private final String PASSWORD = "geoserver";
 
     @Autowired
-    private DiscoveryClient discoveryClient;
+    private EurekaClient eurekaClient;
 
     private void init() throws MalformedURLException, GisImportException {
         URI = getRandomGeoServerInstanceUri();
@@ -33,7 +33,7 @@ public class GeoServerInstance {
 
     private String getRandomGeoServerInstanceUri() throws GisImportException {
 
-        Application app = discoveryClient.getApplication("geoserver");
+        Application app = eurekaClient.getApplication("geoserver");
         int numberOfInstances = app.getInstances().size();
 
         if (numberOfInstances < 1) {

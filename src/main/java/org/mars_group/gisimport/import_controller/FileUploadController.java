@@ -1,9 +1,10 @@
 package org.mars_group.gisimport.import_controller;
 
-import org.mars_group.core.ImportState;
-import org.mars_group.metadataclient.MetadataClient;
+import com.netflix.discovery.EurekaClient;
 import org.apache.commons.io.FileUtils;
+import org.mars_group.core.ImportState;
 import org.mars_group.gisimport.exceptions.GisImportException;
+import org.mars_group.metadataclient.MetadataClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -22,16 +23,15 @@ class FileUploadController {
 
     private static final String uploadDir = "upload-dir";
 
-    private final
-    RestTemplate restTemplate;
-
-    private final
-    GeoServerImport gsImport;
+    private final RestTemplate restTemplate;
+    private final GeoServerImport gsImport;
+    private final EurekaClient eurekaClient;
 
     @Autowired
-    public FileUploadController(RestTemplate restTemplate, GeoServerImport gsImport) {
+    public FileUploadController(RestTemplate restTemplate, GeoServerImport gsImport, EurekaClient eurekaClient) {
         this.restTemplate = restTemplate;
         this.gsImport = gsImport;
+        this.eurekaClient = eurekaClient;
     }
 
     /**
@@ -60,8 +60,7 @@ class FileUploadController {
     }
 
     private ResponseEntity<String> handleUpload(String title, String filename, String dataId, String specificUploadDir) {
-
-        MetadataClient metadataClient = MetadataClient.getInstance(restTemplate, "http://metadata-service:4444");
+        MetadataClient metadataClient = MetadataClient.getInstance(restTemplate, eurekaClient);
         metadataClient.setState(dataId, ImportState.PROCESSING);
 
         try {
