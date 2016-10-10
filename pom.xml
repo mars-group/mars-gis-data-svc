@@ -66,7 +66,7 @@
         <dependency>
             <groupId>org.mars-group</groupId>
             <artifactId>metadata-client</artifactId>
-            <version>0.0.56</version>
+            <version>0.0.57ª</version>
         </dependency>
 
         <!-- Geo -->
@@ -101,11 +101,6 @@
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-core</artifactId>
             <version>1.13</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.5</version>
         </dependency>
     </dependencies>
 
