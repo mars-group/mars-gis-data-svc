@@ -1,9 +1,11 @@
-package org.mars_group.gisimport.import_controller;
+package org.mars_group.gisimport.controller;
 
 import com.netflix.discovery.EurekaClient;
+import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import org.apache.commons.io.FileUtils;
 import org.mars_group.core.ImportState;
 import org.mars_group.gisimport.exceptions.GisImportException;
+import org.mars_group.gisimport.util.GeoServerInstance;
 import org.mars_group.metadataclient.MetadataClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
@@ -19,19 +21,21 @@ import java.net.MalformedURLException;
 import static org.junit.Assert.assertTrue;
 
 @RestController
-class FileUploadController {
+class FileController {
 
     private static final String uploadDir = "upload-dir";
 
     private final RestTemplate restTemplate;
     private final GeoServerImport gsImport;
     private final EurekaClient eurekaClient;
+    private final GeoServerInstance geoServerInstance;
 
     @Autowired
-    public FileUploadController(RestTemplate restTemplate, GeoServerImport gsImport, EurekaClient eurekaClient) {
+    public FileController(RestTemplate restTemplate, GeoServerImport gsImport, EurekaClient eurekaClient, GeoServerInstance geoServerInstance) {
         this.restTemplate = restTemplate;
         this.gsImport = gsImport;
         this.eurekaClient = eurekaClient;
+        this.geoServerInstance = geoServerInstance;
     }
 
     /**
@@ -43,7 +47,7 @@ class FileUploadController {
      * @return status message
      */
     @ResponseBody
-    @RequestMapping(method = RequestMethod.POST, value = "/import")
+    @RequestMapping(method = RequestMethod.POST, value = "/gis")
     public ResponseEntity<String> handleImport(@RequestParam String dataId, @RequestParam String title, @RequestParam String filename) {
         return restTemplate.execute("http://file-service:3333/files/" + dataId, HttpMethod.GET, null, response -> {
             try {
@@ -57,6 +61,34 @@ class FileUploadController {
                 return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
             }
         });
+    }
+
+    /**
+     * Download files
+     *
+     * @param dataId id created during import
+     * @param name   the name of the file specified at import.
+     * @return relative uri to the file
+     */
+    @ResponseBody
+    @RequestMapping(method = RequestMethod.GET, value = "/gis/{dataId}")
+    public ResponseEntity<String> downloadFile(@PathVariable("dataId") String dataId, @RequestParam String name) throws MalformedURLException, GisImportException {
+        GeoServerExport geoServerExport = new GeoServerExport(geoServerInstance);
+        return new ResponseEntity<>(geoServerExport.getUri(dataId, name), HttpStatus.OK);
+    }
+
+    @ResponseBody
+    @RequestMapping(method = RequestMethod.DELETE, value = "/gis/{dataId}")
+    public ResponseEntity<String> deleteFile(@PathVariable("dataId") String dataId) throws MalformedURLException, GisImportException {
+        GeoServerRESTPublisher publisher = geoServerInstance.getPublisher();
+        boolean result = publisher.removeWorkspace(dataId, true);
+
+        if (result) {
+            return new ResponseEntity<>("deleted", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Error inside the geoserver", HttpStatus.INTERNAL_SERVER_ERROR);
+
+        }
     }
 
     private ResponseEntity<String> handleUpload(String title, String filename, String dataId, String specificUploadDir) {

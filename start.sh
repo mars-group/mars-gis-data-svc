@@ -6,7 +6,6 @@
 mvn package
 docker-compose -f docker-compose_dev.yml build
 cd ../mars-cloudinanutshell
-docker-compose -f develop.yml stop gisimport
-docker-compose -f develop.yml rm -f gisimport
-docker-compose -f develop.yml up -d gisimport
-docker-compose -f develop.yml logs -f gisimport
+docker-compose -f lennart.yml stop gisimport
+docker-compose -f lennart.yml up -d gisimport
+docker-compose -f lennart.yml logs -f gisimport

@@ -15,6 +15,7 @@ import java.util.Random;
 @Component
 public class GeoServerInstance {
 
+    private final EurekaClient eurekaClient;
     private GeoServerRESTPublisher publisher;
     private GeoServerRESTReader reader;
     private String URI;
@@ -22,13 +23,17 @@ public class GeoServerInstance {
     private final String PASSWORD = "geoserver";
 
     @Autowired
-    private EurekaClient eurekaClient;
+    public GeoServerInstance(EurekaClient eurekaClient) {
+        this.eurekaClient = eurekaClient;
+    }
 
     private void init() throws MalformedURLException, GisImportException {
-        URI = getRandomGeoServerInstanceUri();
+        if (publisher == null) {
+            URI = getRandomGeoServerInstanceUri();
 
-        reader = new GeoServerRESTReader(URI, USER, PASSWORD);
-        publisher = new GeoServerRESTPublisher(URI, USER, PASSWORD);
+            reader = new GeoServerRESTReader(URI, USER, PASSWORD);
+            publisher = new GeoServerRESTPublisher(URI, USER, PASSWORD);
+        }
     }
 
     private String getRandomGeoServerInstanceUri() throws GisImportException {
@@ -51,37 +56,28 @@ public class GeoServerInstance {
     }
 
     public GeoServerRESTPublisher getPublisher() throws MalformedURLException, GisImportException {
-        if (publisher == null) {
-            init();
-        }
+        init();
         return publisher;
     }
 
     public GeoServerRESTReader getReader() throws MalformedURLException, GisImportException {
-        if (publisher == null) {
-            init();
-        }
+        init();
         return reader;
     }
 
     public String getUri() throws MalformedURLException, GisImportException {
-        if (publisher == null) {
-            init();
-        }
+        init();
         return URI;
     }
 
     public String getUser() throws MalformedURLException, GisImportException {
-        if (publisher == null) {
-            init();
-        }
+        init();
         return USER;
     }
 
     public String getPassword() throws MalformedURLException, GisImportException {
-        if (publisher == null) {
-            init();
-        }
+        init();
         return PASSWORD;
     }
+
 }

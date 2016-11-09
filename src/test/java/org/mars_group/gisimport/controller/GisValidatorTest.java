@@ -1,4 +1,4 @@
-package org.mars_group.gisimport.import_controller;
+package org.mars_group.gisimport.controller;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

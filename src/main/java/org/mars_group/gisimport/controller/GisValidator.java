@@ -1,4 +1,4 @@
-package org.mars_group.gisimport.import_controller;
+package org.mars_group.gisimport.controller;
 
 import org.apache.commons.io.FilenameUtils;
 import org.geotools.coverage.grid.GridCoverage2D;

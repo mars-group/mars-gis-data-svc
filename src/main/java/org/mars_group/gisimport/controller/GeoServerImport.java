@@ -1,4 +1,4 @@
-package org.mars_group.gisimport.import_controller;
+package org.mars_group.gisimport.controller;
 
 
 import com.netflix.discovery.EurekaClient;
@@ -7,7 +7,6 @@ import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
 import org.geotools.referencing.CRS;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
-import org.mars_group.gisimport.export_controller.FileDownloadController;
 import org.mars_group.gisimport.util.DataType;
 import org.mars_group.gisimport.util.GeoServerInstance;
 import org.mars_group.metadataclient.MetadataClient;
@@ -29,14 +28,12 @@ class GeoServerImport {
 
     private final RestTemplate restTemplate;
     private final GeoServerInstance geoServerInstance;
-    private final FileDownloadController downloadController;
     private final EurekaClient eurekaClient;
 
     @Autowired
-    public GeoServerImport(RestTemplate restTemplate, GeoServerInstance geoServerInstance, FileDownloadController downloadController, EurekaClient eurekaClient) {
+    public GeoServerImport(RestTemplate restTemplate, GeoServerInstance geoServerInstance, EurekaClient eurekaClient) {
         this.restTemplate = restTemplate;
         this.geoServerInstance = geoServerInstance;
-        this.downloadController = downloadController;
         this.eurekaClient = eurekaClient;
     }
 
@@ -94,20 +91,21 @@ class GeoServerImport {
                     file = new File(uploadDir + File.separator + gisValidator.getDataName() + ".tif");
                     result = publisher.publishGeoTIFF(dataId, "Websuite_Asc", title, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
-                    metadata.put("uri", downloadController.downloadRasterFile(dataId, title));
+
                     break;
                 case SHP:
                     result = publisher.publishShp(dataId, "Websuite_Shapefile", gisValidator.getDataName(),
                             file, crsCode, "default_point");
-                    metadata.put("uri", downloadController.downloadVectorFile(dataId, gisValidator.getDataName()));
                     break;
                 case TIF:
                     file = new File(uploadDir + File.separator + gisValidator.getDataName() + ".tif");
                     result = publisher.publishGeoTIFF(dataId, "Websuite_GeoTiff", title, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
-                    metadata.put("uri", downloadController.downloadRasterFile(dataId, title));
                     break;
             }
+
+            GeoServerExport geoServerExport = new GeoServerExport(geoServerInstance);
+            metadata.put("uri", geoServerExport.getUri(dataId, title));
             metadataClient.updateMetadata(dataId, metadata);
 
         } catch (FileNotFoundException e) {
