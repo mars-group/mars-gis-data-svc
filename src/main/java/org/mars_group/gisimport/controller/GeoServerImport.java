@@ -104,8 +104,8 @@ class GeoServerImport {
                     break;
             }
 
-            GeoServerExport geoServerExport = new GeoServerExport(geoServerInstance);
-            metadata.put("uri", geoServerExport.getUri(dataId, title));
+            GeoServerExport geoServerExport = new GeoServerExport(restTemplate, eurekaClient, geoServerInstance);
+            metadata.put("uri", geoServerExport.getUri(dataId));
             metadataClient.updateMetadata(dataId, metadata);
 
         } catch (FileNotFoundException e) {

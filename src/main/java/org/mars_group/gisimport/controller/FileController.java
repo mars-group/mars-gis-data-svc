@@ -71,14 +71,13 @@ class FileController {
      * Download files
      *
      * @param dataId id created during import
-     * @param name   the name of the file specified at import.
      * @return relative uri to the file
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, value = "/gis/{dataId}")
-    public ResponseEntity<String> downloadFile(@PathVariable("dataId") String dataId, @RequestParam String name) throws MalformedURLException, GisImportException {
-        GeoServerExport geoServerExport = new GeoServerExport(geoServerInstance);
-        return new ResponseEntity<>(geoServerExport.getUri(dataId, name), HttpStatus.OK);
+    public ResponseEntity<String> downloadFile(@PathVariable("dataId") String dataId) throws MalformedURLException, GisImportException {
+        GeoServerExport geoServerExport = new GeoServerExport(restTemplate, eurekaClient, geoServerInstance);
+        return new ResponseEntity<>(geoServerExport.getUri(dataId), HttpStatus.OK);
     }
 
     @ResponseBody

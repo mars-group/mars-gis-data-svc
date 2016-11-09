@@ -1,11 +1,15 @@
 package org.mars_group.gisimport.controller;
 
+import com.netflix.discovery.EurekaClient;
 import it.geosolutions.geoserver.rest.GeoServerRESTReader;
 import it.geosolutions.geoserver.rest.decoder.RESTLayer;
+import org.mars_group.core.Metadata;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.util.GeoServerInstance;
+import org.mars_group.metadataclient.MetadataClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import javax.ws.rs.core.UriBuilder;
 import java.net.MalformedURLException;
@@ -14,15 +18,23 @@ import java.net.MalformedURLException;
 class GeoServerExport {
 
     private final GeoServerInstance geoServerInstance;
+    private final RestTemplate restTemplate;
+    private final EurekaClient eurekaClient;
 
     @Autowired
-    GeoServerExport(GeoServerInstance geoServerInstance) {
+    public GeoServerExport(RestTemplate restTemplate, EurekaClient eurekaClient, GeoServerInstance geoServerInstance) {
+        this.restTemplate = restTemplate;
+        this.eurekaClient = eurekaClient;
         this.geoServerInstance = geoServerInstance;
     }
 
-    String getUri(String dataId, String name) throws MalformedURLException, GisImportException {
+    String getUri(String dataId) throws MalformedURLException, GisImportException {
+        MetadataClient metadataClient = MetadataClient.getInstance(restTemplate, eurekaClient);
+        Metadata metadata = metadataClient.getMetadata(dataId);
+        String title = metadata.getTitle();
+
         GeoServerRESTReader reader = geoServerInstance.getReader();
-        RESTLayer layer = reader.getLayer(dataId, name);
+        RESTLayer layer = reader.getLayer(dataId, title);
         RESTLayer.Type type = layer.getType();
 
         if (type == RESTLayer.Type.VECTOR) {
@@ -30,7 +42,7 @@ class GeoServerExport {
                     .path("wfs")
                     .queryParam("request", "GetFeature")
                     .queryParam("version", "2.0.0")
-                    .queryParam("typeName", dataId + ":" + name)
+                    .queryParam("typeName", dataId + ":" + title)
                     .queryParam("outputFormat", "shape-zip")
                     .build().toString();
 
@@ -40,7 +52,7 @@ class GeoServerExport {
                     .queryParam("request", "GetCoverage")
                     .queryParam("service", "WCS")
                     .queryParam("version", "2.0.1")
-                    .queryParam("coverageId", dataId + ":" + name)
+                    .queryParam("coverageId", dataId + ":" + title)
                     .queryParam("format", "ArcGrid")
                     .build().toString();
         }
