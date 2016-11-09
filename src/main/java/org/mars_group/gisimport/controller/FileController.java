@@ -1,5 +1,6 @@
 package org.mars_group.gisimport.controller;
 
+import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import org.apache.commons.io.FileUtils;
@@ -49,7 +50,10 @@ class FileController {
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST, value = "/gis")
     public ResponseEntity<String> handleImport(@RequestParam String dataId, @RequestParam String title, @RequestParam String filename) {
-        return restTemplate.execute("http://file-service:3333/files/" + dataId, HttpMethod.GET, null, response -> {
+        InstanceInfo instanceInfo = eurekaClient.getApplication("file-service").getInstances().get(0);
+        String uri = "http://" + instanceInfo.getAppName() + "/files/";
+
+        return restTemplate.execute(uri + dataId, HttpMethod.GET, null, response -> {
             try {
                 String specificUploadDir = uploadDir + File.separator + dataId;
 
