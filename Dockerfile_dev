@@ -1,4 +1,4 @@
-FROM artifactory.mars.haw-hamburg.de:5000/java:8
+FROM artifactory.mars.haw-hamburg.de:5000/java:8-jre
 ADD target/gisimport-*.jar /target/
 RUN ln -s /target/gisimport-*.jar /app.jar
 EXPOSE 8080 8000
