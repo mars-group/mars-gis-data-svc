@@ -4,17 +4,17 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.mars-group</groupId>
-    <artifactId>gisimport</artifactId>
+    <artifactId>gis-data-svc</artifactId>
     <version>1.0.${bambooBuildNumber}-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>gis-import</name>
+    <name>gis-data-svc</name>
     <description>MARS GIS import</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.3.5.RELEASE</version>
+        <version>1.4.2.RELEASE</version>
     </parent>
 
     <properties>
@@ -22,18 +22,6 @@
         <java.version>1.8</java.version>
         <geotools.version>14.3</geotools.version>
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>Brixton.SR1</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -44,12 +32,8 @@
 
         <!-- Spring -->
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-config</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-eureka</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -66,7 +50,7 @@
         <dependency>
             <groupId>org.mars-group</groupId>
             <artifactId>metadata-client</artifactId>
-            <version>0.0.57</version>
+            <version>0.0.60</version>
         </dependency>
 
         <!-- Geo -->

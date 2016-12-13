@@ -1,7 +1,6 @@
 package org.mars_group.gisimport.controller;
 
 
-import com.netflix.discovery.EurekaClient;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
 import org.geotools.referencing.CRS;
@@ -28,13 +27,13 @@ class GeoServerImport {
 
     private final RestTemplate restTemplate;
     private final GeoServerInstance geoServerInstance;
-    private final EurekaClient eurekaClient;
+    private final GeoServerExport geoServerExport;
 
     @Autowired
-    public GeoServerImport(RestTemplate restTemplate, GeoServerInstance geoServerInstance, EurekaClient eurekaClient) {
+    public GeoServerImport(RestTemplate restTemplate, GeoServerInstance geoServerInstance, GeoServerExport geoServerExport) {
         this.restTemplate = restTemplate;
         this.geoServerInstance = geoServerInstance;
-        this.eurekaClient = eurekaClient;
+        this.geoServerExport = geoServerExport;
     }
 
     void handleImport(String uploadDir, String uploadFilename, String dataId, String title) throws GisImportException, MalformedURLException {
@@ -66,7 +65,7 @@ class GeoServerImport {
 
         DataType dataType = gisValidator.getDataType();
 
-        MetadataClient metadataClient = MetadataClient.getInstance(restTemplate, eurekaClient);
+        MetadataClient metadataClient = MetadataClient.getInstance(restTemplate);
 
         Map<String, Double> topLeftBound = new HashMap<>();
         topLeftBound.put("lat", gisValidator.getTopRightBound()[0]);
@@ -104,7 +103,6 @@ class GeoServerImport {
                     break;
             }
 
-            GeoServerExport geoServerExport = new GeoServerExport(restTemplate, eurekaClient, geoServerInstance);
             metadata.put("uri", geoServerExport.getUri(dataId));
             metadataClient.updateMetadata(dataId, metadata);
 

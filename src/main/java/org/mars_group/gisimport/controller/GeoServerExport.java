@@ -1,6 +1,5 @@
 package org.mars_group.gisimport.controller;
 
-import com.netflix.discovery.EurekaClient;
 import it.geosolutions.geoserver.rest.GeoServerRESTReader;
 import it.geosolutions.geoserver.rest.decoder.RESTLayer;
 import org.mars_group.core.Metadata;
@@ -19,17 +18,15 @@ class GeoServerExport {
 
     private final GeoServerInstance geoServerInstance;
     private final RestTemplate restTemplate;
-    private final EurekaClient eurekaClient;
 
     @Autowired
-    public GeoServerExport(RestTemplate restTemplate, EurekaClient eurekaClient, GeoServerInstance geoServerInstance) {
+    public GeoServerExport(RestTemplate restTemplate, GeoServerInstance geoServerInstance) {
         this.restTemplate = restTemplate;
-        this.eurekaClient = eurekaClient;
         this.geoServerInstance = geoServerInstance;
     }
 
     String getUri(String dataId) throws MalformedURLException, GisImportException {
-        MetadataClient metadataClient = MetadataClient.getInstance(restTemplate, eurekaClient);
+        MetadataClient metadataClient = MetadataClient.getInstance(restTemplate);
         Metadata metadata = metadataClient.getMetadata(dataId);
         String title = metadata.getTitle();
 

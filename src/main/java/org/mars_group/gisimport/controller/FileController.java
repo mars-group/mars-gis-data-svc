@@ -1,7 +1,5 @@
 package org.mars_group.gisimport.controller;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import org.apache.commons.io.FileUtils;
 import org.mars_group.core.ImportState;
@@ -28,15 +26,15 @@ class FileController {
 
     private final RestTemplate restTemplate;
     private final GeoServerImport gsImport;
-    private final EurekaClient eurekaClient;
     private final GeoServerInstance geoServerInstance;
+    private final GeoServerExport geoServerExport;
 
     @Autowired
-    public FileController(RestTemplate restTemplate, GeoServerImport gsImport, EurekaClient eurekaClient, GeoServerInstance geoServerInstance) {
+    public FileController(RestTemplate restTemplate, GeoServerImport gsImport, GeoServerInstance geoServerInstance, GeoServerExport geoServerExport1) {
         this.restTemplate = restTemplate;
         this.gsImport = gsImport;
-        this.eurekaClient = eurekaClient;
         this.geoServerInstance = geoServerInstance;
+        this.geoServerExport = geoServerExport1;
     }
 
     /**
@@ -50,8 +48,7 @@ class FileController {
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST, value = "/gis")
     public ResponseEntity<String> handleImport(@RequestParam String dataId, @RequestParam String title, @RequestParam String filename) {
-        InstanceInfo instanceInfo = eurekaClient.getApplication("file-service").getInstances().get(0);
-        String uri = "http://" + instanceInfo.getAppName() + "/files/";
+        String uri = "http://file-svc/files/";
 
         return restTemplate.execute(uri + dataId, HttpMethod.GET, null, response -> {
             try {
@@ -76,7 +73,6 @@ class FileController {
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, value = "/gis/{dataId}")
     public ResponseEntity<String> downloadFile(@PathVariable("dataId") String dataId) throws MalformedURLException, GisImportException {
-        GeoServerExport geoServerExport = new GeoServerExport(restTemplate, eurekaClient, geoServerInstance);
         return new ResponseEntity<>(geoServerExport.getUri(dataId), HttpStatus.OK);
     }
 
@@ -95,7 +91,7 @@ class FileController {
     }
 
     private ResponseEntity<String> handleUpload(String title, String filename, String dataId, String specificUploadDir) {
-        MetadataClient metadataClient = MetadataClient.getInstance(restTemplate, eurekaClient);
+        MetadataClient metadataClient = MetadataClient.getInstance(restTemplate);
         metadataClient.setState(dataId, ImportState.PROCESSING);
 
         try {

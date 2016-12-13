@@ -1,5 +1,5 @@
 FROM artifactory.mars.haw-hamburg.de:5000/java:8-jre
-ADD target/gisimport-*.jar /target/
-RUN ln -s /target/gisimport-*.jar /app.jar
+ADD target/gis-data-svc-*.jar /target/
+RUN ln -s /target/gis-data-svc-*.jar /app.jar
 EXPOSE 8080 8000
 ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom", "-Xdebug","-Xrunjdwp:server=y,transport=dt_socket,suspend=n,address=8000","-jar","/app.jar"]
