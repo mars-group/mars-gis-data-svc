@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This builds the gis-import
+# Builds the gis-data JAR and restarts the pod.
 
-mvn package
-docker-compose -f docker-compose_dev.yml build
+mvn clean package
+kubectl delete pod $(kubectl get pod |grep gis-data |awk '{print $1;}')
