@@ -30,11 +30,11 @@ class FileController {
     private final GeoServerExport geoServerExport;
 
     @Autowired
-    public FileController(RestTemplate restTemplate, GeoServerImport gsImport, GeoServerInstance geoServerInstance, GeoServerExport geoServerExport1) {
+    public FileController(RestTemplate restTemplate, GeoServerImport gsImport, GeoServerInstance geoServerInstance, GeoServerExport geoServerExport) {
         this.restTemplate = restTemplate;
         this.gsImport = gsImport;
         this.geoServerInstance = geoServerInstance;
-        this.geoServerExport = geoServerExport1;
+        this.geoServerExport = geoServerExport;
     }
 
     /**

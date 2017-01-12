@@ -19,7 +19,7 @@ public class GeoServerInstance {
 
     private void init() throws MalformedURLException, GisImportException {
         if (publisher == null) {
-            URI = "http://geoserver:8080/geoserver";
+            URI = "http://geoserver/geoserver";
             reader = new GeoServerRESTReader(URI, USER, PASSWORD);
             publisher = new GeoServerRESTPublisher(URI, USER, PASSWORD);
         }
