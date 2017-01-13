@@ -83,27 +83,30 @@ class GeoServerImport {
         metadata.put("type", dataType.getName());
         metadata.put("additionalTypeSpecificData", additionalTypeSpecificData);
 
+        String dataName = gisValidator.getDataName();
+
         try {
             switch (dataType) {
                 case ASC:
                     // We converted the Ascii Grid to GeoTiff, so this imports Geotiff
-                    file = new File(uploadDir + File.separator + gisValidator.getDataName() + ".tif");
+                    file = new File(uploadDir + File.separator + dataName + ".tif");
                     result = publisher.publishGeoTIFF(dataId, "Websuite_Asc", title, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
-
+                    metadata.put("uri", geoServerExport.getAscUri(dataId));
                     break;
                 case SHP:
-                    result = publisher.publishShp(dataId, "Websuite_Shapefile", gisValidator.getDataName(),
+                    result = publisher.publishShp(dataId, "Websuite_Shapefile", dataName,
                             file, crsCode, "default_point");
+                    metadata.put("uri", geoServerExport.getShpUri(dataId, dataName));
                     break;
                 case TIF:
-                    file = new File(uploadDir + File.separator + gisValidator.getDataName() + ".tif");
+                    file = new File(uploadDir + File.separator + dataName + ".tif");
                     result = publisher.publishGeoTIFF(dataId, "Websuite_GeoTiff", title, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
+                    metadata.put("uri", geoServerExport.getAscUri(dataId));
                     break;
             }
 
-            metadata.put("uri", geoServerExport.getUri(dataId));
             metadataClient.updateMetadata(dataId, metadata);
 
         } catch (FileNotFoundException e) {

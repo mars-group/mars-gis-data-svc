@@ -73,7 +73,7 @@ class FileController {
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, value = "/gis/{dataId}")
     public ResponseEntity<String> downloadFile(@PathVariable("dataId") String dataId) throws MalformedURLException, GisImportException {
-        return new ResponseEntity<>(geoServerExport.getUri(dataId), HttpStatus.OK);
+        return new ResponseEntity<>(geoServerExport.getAscUri(dataId), HttpStatus.OK);
     }
 
     @ResponseBody

@@ -25,33 +25,36 @@ class GeoServerExport {
         this.geoServerInstance = geoServerInstance;
     }
 
-    String getUri(String dataId) throws MalformedURLException, GisImportException {
+    String getAscUri(String dataId) throws MalformedURLException, GisImportException {
         MetadataClient metadataClient = MetadataClient.getInstance(restTemplate);
         Metadata metadata = metadataClient.getMetadata(dataId);
         String title = metadata.getTitle();
 
         GeoServerRESTReader reader = geoServerInstance.getReader();
         RESTLayer layer = reader.getLayer(dataId, title);
-        RESTLayer.Type type = layer.getType();
 
-        if (type == RESTLayer.Type.VECTOR) {
-            return UriBuilder.fromUri("")
-                    .path("wfs")
-                    .queryParam("request", "GetFeature")
-                    .queryParam("version", "2.0.0")
-                    .queryParam("typeName", dataId + ":" + title)
-                    .queryParam("outputFormat", "shape-zip")
-                    .build().toString();
-
-        } else {
-            return UriBuilder.fromUri("")
-                    .path("wcs")
-                    .queryParam("request", "GetCoverage")
-                    .queryParam("service", "WCS")
-                    .queryParam("version", "2.0.1")
-                    .queryParam("coverageId", dataId + ":" + title)
-                    .queryParam("format", "ArcGrid")
-                    .build().toString();
+        if (layer == null) {
+            System.out.println("Layer is null");
+            return "";
         }
+
+        return UriBuilder.fromUri("")
+                .path("wcs")
+                .queryParam("request", "GetCoverage")
+                .queryParam("service", "WCS")
+                .queryParam("version", "2.0.1")
+                .queryParam("coverageId", dataId + ":" + title)
+                .queryParam("format", "ArcGrid")
+                .build().toString();
+    }
+
+    String getShpUri(String dataId, String dataName) throws MalformedURLException, GisImportException {
+        return UriBuilder.fromUri("")
+                .path("wfs")
+                .queryParam("request", "GetFeature")
+                .queryParam("version", "2.0.0")
+                .queryParam("typeName", dataId + ":" + dataName)
+                .queryParam("outputFormat", "shape-zip")
+                .build().toString();
     }
 }
