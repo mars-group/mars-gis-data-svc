@@ -9,17 +9,16 @@ import org.springframework.stereotype.Component;
 import java.net.MalformedURLException;
 
 @Component
-public class GeoServerInstance {
+public class GeoServer {
 
     private GeoServerRESTPublisher publisher;
     private GeoServerRESTReader reader;
-    private String URI;
-    private final String USER = "admin";
-    private final String PASSWORD = "geoserver";
 
     private void init() throws MalformedURLException, GisImportException {
         if (publisher == null) {
-            URI = "http://geoserver/geoserver";
+            String URI = "http://geoserver/geoserver";
+            String USER = "admin";
+            String PASSWORD = "geoserver";
             reader = new GeoServerRESTReader(URI, USER, PASSWORD);
             publisher = new GeoServerRESTPublisher(URI, USER, PASSWORD);
         }

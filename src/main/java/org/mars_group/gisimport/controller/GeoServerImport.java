@@ -7,7 +7,8 @@ import org.geotools.referencing.CRS;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
 import org.mars_group.gisimport.util.DataType;
-import org.mars_group.gisimport.util.GeoServerInstance;
+import org.mars_group.gisimport.util.GeoServer;
+import org.mars_group.gisimport.util.GisManager;
 import org.mars_group.metadataclient.MetadataClient;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -26,13 +27,13 @@ import java.util.Map;
 class GeoServerImport {
 
     private final RestTemplate restTemplate;
-    private final GeoServerInstance geoServerInstance;
+    private final GeoServer geoServer;
     private final GeoServerExport geoServerExport;
 
     @Autowired
-    public GeoServerImport(RestTemplate restTemplate, GeoServerInstance geoServerInstance, GeoServerExport geoServerExport) {
+    public GeoServerImport(RestTemplate restTemplate, GeoServer geoServer, GeoServerExport geoServerExport) {
         this.restTemplate = restTemplate;
-        this.geoServerInstance = geoServerInstance;
+        this.geoServer = geoServer;
         this.geoServerExport = geoServerExport;
     }
 
@@ -40,40 +41,39 @@ class GeoServerImport {
         title = title.replaceAll(" ", "");
 
         File file = new File(uploadDir + File.separator + uploadFilename);
-        GisValidator gisValidator;
+        GisManager gisManager;
 
         try {
-            gisValidator = new GisValidator(uploadDir, file.getAbsolutePath());
+            gisManager = new GisManager(uploadDir, file.getAbsolutePath());
         } catch (IOException | GisValidationException e) {
             e.printStackTrace();
             throw new GisImportException(e.getMessage());
         }
 
-        CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
         String crsCode;
-
         try {
+            CoordinateReferenceSystem crs = gisManager.getCoordinateReferenceSystem();
             crsCode = CRS.lookupIdentifier(crs, true);
         } catch (FactoryException e) {
             e.printStackTrace();
             throw new GisImportException(e.getMessage());
         }
 
-        boolean result = false;
-        GeoServerRESTPublisher publisher = geoServerInstance.getPublisher();
+        boolean importSuccess = false;
+        GeoServerRESTPublisher publisher = geoServer.getPublisher();
         publisher.createWorkspace(dataId);
 
-        DataType dataType = gisValidator.getDataType();
+        DataType dataType = gisManager.getDataType();
 
         MetadataClient metadataClient = MetadataClient.getInstance(restTemplate);
 
         Map<String, Double> topLeftBound = new HashMap<>();
-        topLeftBound.put("lat", gisValidator.getTopRightBound()[0]);
-        topLeftBound.put("lng", gisValidator.getTopRightBound()[1]);
+        topLeftBound.put("lat", gisManager.getTopRightBound()[0]);
+        topLeftBound.put("lng", gisManager.getTopRightBound()[1]);
 
         Map<String, Double> bottomRightBound = new HashMap<>();
-        bottomRightBound.put("lat", gisValidator.getBottomLeftBound()[0]);
-        bottomRightBound.put("lng", gisValidator.getBottomLeftBound()[1]);
+        bottomRightBound.put("lat", gisManager.getBottomLeftBound()[0]);
+        bottomRightBound.put("lng", gisManager.getBottomLeftBound()[1]);
 
         Map<String, Object> additionalTypeSpecificData = new HashMap<>();
         additionalTypeSpecificData.put("topLeftBound", topLeftBound);
@@ -83,25 +83,25 @@ class GeoServerImport {
         metadata.put("type", dataType.getName());
         metadata.put("additionalTypeSpecificData", additionalTypeSpecificData);
 
-        String dataName = gisValidator.getDataName();
+        String dataName = gisManager.getDataName();
 
         try {
             switch (dataType) {
                 case ASC:
                     // We converted the Ascii Grid to GeoTiff, so this imports Geotiff
                     file = new File(uploadDir + File.separator + dataName + ".tif");
-                    result = publisher.publishGeoTIFF(dataId, "Websuite_Asc", title, file, crsCode,
+                    importSuccess = publisher.publishGeoTIFF(dataId, "Websuite_Asc", title, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
                     metadata.put("uri", geoServerExport.getAscUri(dataId));
                     break;
                 case SHP:
-                    result = publisher.publishShp(dataId, "Websuite_Shapefile", dataName,
+                    importSuccess = publisher.publishShp(dataId, "Websuite_Shapefile", dataName,
                             file, crsCode, "default_point");
                     metadata.put("uri", geoServerExport.getShpUri(dataId, dataName));
                     break;
                 case TIF:
                     file = new File(uploadDir + File.separator + dataName + ".tif");
-                    result = publisher.publishGeoTIFF(dataId, "Websuite_GeoTiff", title, file, crsCode,
+                    importSuccess = publisher.publishGeoTIFF(dataId, "Websuite_GeoTiff", title, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
                     metadata.put("uri", geoServerExport.getAscUri(dataId));
                     break;
@@ -115,7 +115,7 @@ class GeoServerImport {
             throw new GisImportException(e.getMessage());
         }
 
-        if (!result) {
+        if (!importSuccess) {
             publisher.removeWorkspace(dataId, false);
             throw new GisImportException(uploadFilename + ": error inside the GeoServer! Import failed");
         }

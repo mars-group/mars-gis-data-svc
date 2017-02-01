@@ -6,6 +6,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
+import org.mars_group.gisimport.util.GisManager;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.File;
@@ -15,7 +16,7 @@ import java.util.UUID;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class GisValidatorTest {
+public class GisManagerTest {
 
     private final static String uploadDir = "upload-dir";
 
@@ -57,9 +58,9 @@ public class GisValidatorTest {
         String localUploadDir = createSpecificUploadDir();
 
         try {
-            GisValidator gisValidator = new GisValidator(localUploadDir, filename);
+            GisManager gisManager = new GisManager(localUploadDir, filename);
 
-            CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
+            CoordinateReferenceSystem crs = gisManager.getCoordinateReferenceSystem();
             assertTrue(crs.getName().toString().equals("EPSG:NZGD49 / New Zealand Map Grid"));
 
         } catch (IOException | GisValidationException | GisImportException e) {
@@ -99,9 +100,9 @@ public class GisValidatorTest {
         String localUploadDir = createSpecificUploadDir();
 
         try {
-            GisValidator gisValidator = new GisValidator(localUploadDir, filename);
+            GisManager gisManager = new GisManager(localUploadDir, filename);
 
-            CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
+            CoordinateReferenceSystem crs = gisManager.getCoordinateReferenceSystem();
             assertTrue(crs.getName().toString().equals("EPSG:NAD27 / UTM zone 13N"));
 
         } catch (IOException | GisValidationException | GisImportException e) {
@@ -141,11 +142,11 @@ public class GisValidatorTest {
         String localUploadDir = createSpecificUploadDir();
 
         try {
-            GisValidator gisValidator = new GisValidator(localUploadDir, filename);
+            GisManager gisManager = new GisManager(localUploadDir, filename);
 
-            CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
+            CoordinateReferenceSystem crs = gisManager.getCoordinateReferenceSystem();
             assertTrue(crs.getName().toString().equals("Geographic"));
-            assertTrue(gisValidator.getDataName().equals("pop_pnt"));
+            assertTrue(gisManager.getDataName().equals("pop_pnt"));
 
         } catch (IOException | GisValidationException | GisImportException e) {
             e.printStackTrace();

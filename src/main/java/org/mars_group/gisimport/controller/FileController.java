@@ -4,7 +4,7 @@ import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import org.apache.commons.io.FileUtils;
 import org.mars_group.core.ImportState;
 import org.mars_group.gisimport.exceptions.GisImportException;
-import org.mars_group.gisimport.util.GeoServerInstance;
+import org.mars_group.gisimport.util.GeoServer;
 import org.mars_group.metadataclient.MetadataClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
@@ -25,15 +25,15 @@ class FileController {
     private static final String uploadDir = "upload-dir";
 
     private final RestTemplate restTemplate;
-    private final GeoServerImport gsImport;
-    private final GeoServerInstance geoServerInstance;
+    private final GeoServerImport geoServerImport;
+    private final GeoServer geoServer;
     private final GeoServerExport geoServerExport;
 
     @Autowired
-    public FileController(RestTemplate restTemplate, GeoServerImport gsImport, GeoServerInstance geoServerInstance, GeoServerExport geoServerExport) {
+    public FileController(RestTemplate restTemplate, GeoServerImport geoServerImport, GeoServer geoServer, GeoServerExport geoServerExport) {
         this.restTemplate = restTemplate;
-        this.gsImport = gsImport;
-        this.geoServerInstance = geoServerInstance;
+        this.geoServerImport = geoServerImport;
+        this.geoServer = geoServer;
         this.geoServerExport = geoServerExport;
     }
 
@@ -47,15 +47,15 @@ class FileController {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST, value = "/gis")
-    public ResponseEntity<String> handleImport(@RequestParam String dataId, @RequestParam String title, @RequestParam String filename) {
+    public ResponseEntity<String> postFile(@RequestParam String dataId, @RequestParam String title, @RequestParam String filename) {
         String uri = "http://file-svc/files/";
 
         return restTemplate.execute(uri + dataId, HttpMethod.GET, null, response -> {
             try {
                 String specificUploadDir = uploadDir + File.separator + dataId;
 
-                saveFile(response.getBody(), specificUploadDir, filename);
-                return handleUpload(title, filename, dataId, specificUploadDir);
+                saveFileToDisk(response.getBody(), specificUploadDir, filename);
+                return startImport(title, filename, dataId, specificUploadDir);
 
             } catch (GisImportException e) {
                 e.printStackTrace();
@@ -72,14 +72,14 @@ class FileController {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, value = "/gis/{dataId}")
-    public ResponseEntity<String> downloadFile(@PathVariable("dataId") String dataId) throws MalformedURLException, GisImportException {
+    public ResponseEntity<String> getFile(@PathVariable("dataId") String dataId) throws MalformedURLException, GisImportException {
         return new ResponseEntity<>(geoServerExport.getAscUri(dataId), HttpStatus.OK);
     }
 
     @ResponseBody
     @RequestMapping(method = RequestMethod.DELETE, value = "/gis/{dataId}")
     public ResponseEntity<String> deleteFile(@PathVariable("dataId") String dataId) throws MalformedURLException, GisImportException {
-        GeoServerRESTPublisher publisher = geoServerInstance.getPublisher();
+        GeoServerRESTPublisher publisher = geoServer.getPublisher();
         boolean result = publisher.removeWorkspace(dataId, true);
 
         if (result) {
@@ -90,13 +90,13 @@ class FileController {
         }
     }
 
-    private ResponseEntity<String> handleUpload(String title, String filename, String dataId, String specificUploadDir) {
+    private ResponseEntity<String> startImport(String title, String filename, String dataId, String specificUploadDir) {
         MetadataClient metadataClient = MetadataClient.getInstance(restTemplate);
         metadataClient.setState(dataId, ImportState.PROCESSING);
 
         try {
             // START THE IMPORT
-            gsImport.handleImport(specificUploadDir, filename, dataId, title);
+            geoServerImport.handleImport(specificUploadDir, filename, dataId, title);
         } catch (GisImportException | MalformedURLException e) {
             e.printStackTrace();
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -113,7 +113,7 @@ class FileController {
         return new ResponseEntity<>(dataId, HttpStatus.OK);
     }
 
-    private void saveFile(InputStream file, String specificUploadDir, String filename) throws GisImportException {
+    private void saveFileToDisk(InputStream file, String specificUploadDir, String filename) throws GisImportException {
         try {
             if (!new File(uploadDir).exists()) {
                 assertTrue(new File(uploadDir).mkdir());

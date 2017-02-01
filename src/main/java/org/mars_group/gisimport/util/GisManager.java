@@ -1,4 +1,4 @@
-package org.mars_group.gisimport.controller;
+package org.mars_group.gisimport.util;
 
 import org.apache.commons.io.FilenameUtils;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -13,9 +13,6 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
-import org.mars_group.gisimport.util.DataType;
-import org.mars_group.gisimport.util.UnzipUtility;
-import org.mars_group.gisimport.util.ZipWriter;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
@@ -30,7 +27,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 
-class GisValidator {
+public class GisManager {
     private boolean zipHasDirectory;
     private String uploadDir;
     private String zipDirectoryName;
@@ -48,7 +45,7 @@ class GisValidator {
      * @param uploadDir the upload directory
      * @param filename  this has to be either .zip .tif or .asc
      */
-    GisValidator(String uploadDir, String filename) throws IOException, GisValidationException, GisImportException {
+    public GisManager(String uploadDir, String filename) throws IOException, GisValidationException, GisImportException {
         this.uploadDir = uploadDir;
         topRightBound = new double[2];
         bottomLeftBound = new double[2];
@@ -105,7 +102,7 @@ class GisValidator {
         ZipFile zipFile = new ZipFile(filename);
         Enumeration zipEntries = zipFile.entries();
 
-        /**
+        /*
          * We want to know if the files are inside a directory and detect the extension type.
          * Since we walk though the zip from the root, we can stop looking for directories,
          * once we found a valid extension.
@@ -238,15 +235,15 @@ class GisValidator {
         bottomLeftBound[1] = bounds.getMinY();
     }
 
-    String getDataName() {
+    public String getDataName() {
         return dataName;
     }
 
-    CoordinateReferenceSystem getCoordinateReferenceSystem() {
+    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
         return coordinateReferenceSystem;
     }
 
-    DataType getDataType() {
+    public DataType getDataType() {
         return dataType;
     }
 

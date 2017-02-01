@@ -4,7 +4,7 @@ import it.geosolutions.geoserver.rest.GeoServerRESTReader;
 import it.geosolutions.geoserver.rest.decoder.RESTLayer;
 import org.mars_group.core.Metadata;
 import org.mars_group.gisimport.exceptions.GisImportException;
-import org.mars_group.gisimport.util.GeoServerInstance;
+import org.mars_group.gisimport.util.GeoServer;
 import org.mars_group.metadataclient.MetadataClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,13 +16,13 @@ import java.net.MalformedURLException;
 @Component
 class GeoServerExport {
 
-    private final GeoServerInstance geoServerInstance;
+    private final GeoServer geoServer;
     private final RestTemplate restTemplate;
 
     @Autowired
-    public GeoServerExport(RestTemplate restTemplate, GeoServerInstance geoServerInstance) {
+    public GeoServerExport(RestTemplate restTemplate, GeoServer geoServer) {
         this.restTemplate = restTemplate;
-        this.geoServerInstance = geoServerInstance;
+        this.geoServer = geoServer;
     }
 
     String getAscUri(String dataId) throws MalformedURLException, GisImportException {
@@ -30,7 +30,7 @@ class GeoServerExport {
         Metadata metadata = metadataClient.getMetadata(dataId);
         String title = metadata.getTitle();
 
-        GeoServerRESTReader reader = geoServerInstance.getReader();
+        GeoServerRESTReader reader = geoServer.getReader();
         RESTLayer layer = reader.getLayer(dataId, title);
 
         if (layer == null) {
