@@ -1,11 +1,11 @@
 package org.mars_group.gisimport.util;
 
-public enum DataType {
+public enum GisType {
     ASC("ASCIIGRID"), TIF("GEOTIFF"), SHP("SHAPEFILE");
 
     private String name;
 
-    DataType(String name) {
+    GisType(String name) {
         this.name = name;
     }
 

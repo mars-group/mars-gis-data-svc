@@ -32,7 +32,7 @@ public class GisManager {
     private String uploadDir;
     private String zipDirectoryName;
     private List<String> unsupportedFiles = new ArrayList<>();
-    private DataType dataType;
+    private GisType gisType;
     private String dataName;
     private double[] topRightBound;
     private double[] bottomLeftBound;
@@ -55,13 +55,13 @@ public class GisManager {
         switch (fileExtension.toLowerCase()) {
             case "asc":
                 dataName = FilenameUtils.getBaseName(filename);
-                dataType = DataType.ASC;
+                gisType = GisType.ASC;
                 coordinateReferenceSystem = initAscFile(filename);
                 break;
 
             case "tif":
                 dataName = FilenameUtils.getBaseName(filename);
-                dataType = DataType.TIF;
+                gisType = GisType.TIF;
                 coordinateReferenceSystem = initGeoTiffFile(filename);
                 break;
 
@@ -74,12 +74,12 @@ public class GisManager {
                     removeUnsupportedFiles();
                 }
 
-                if (zipHasDirectory && dataType == DataType.SHP) {
+                if (zipHasDirectory && gisType == GisType.SHP) {
                     createZipWithoutDirectory(this.uploadDir + File.separator + dataName);
                 }
 
                 String fileBasename = this.uploadDir + File.separator + dataName;
-                switch (dataType) {
+                switch (gisType) {
                     case ASC:
                         coordinateReferenceSystem = initAscFile(fileBasename + ".asc");
                         break;
@@ -124,15 +124,15 @@ public class GisManager {
             // determine data type and name
             switch (FilenameUtils.getExtension(zip.getName()).toLowerCase()) {
                 case "asc":
-                    dataType = DataType.ASC;
+                    gisType = GisType.ASC;
                     dataName = FilenameUtils.getBaseName(zip.getName());
                     break;
                 case "tif":
-                    dataType = DataType.TIF;
+                    gisType = GisType.TIF;
                     dataName = FilenameUtils.getBaseName(zip.getName());
                     break;
                 case "shp":
-                    dataType = DataType.SHP;
+                    gisType = GisType.SHP;
                     dataName = zip.getName();
                     break;
                 // all files a ShapeFile can contain. Everything else is not allowed
@@ -157,7 +157,7 @@ public class GisManager {
             }
         }
 
-        if (dataType == null) {
+        if (gisType == null) {
             throw new GisValidationException("could not detect your upload type inside Zip file!");
         }
     }
@@ -243,8 +243,8 @@ public class GisManager {
         return coordinateReferenceSystem;
     }
 
-    public DataType getDataType() {
-        return dataType;
+    public GisType getGisType() {
+        return gisType;
     }
 
     public double[] getTopRightBound() {

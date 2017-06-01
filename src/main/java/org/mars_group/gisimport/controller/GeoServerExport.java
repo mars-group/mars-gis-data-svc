@@ -12,30 +12,35 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.ws.rs.core.UriBuilder;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.util.Map;
 
 @Component
 class GeoServerExport {
 
     private final GeoServer geoServer;
-    private final RestTemplate restTemplate;
+    private final MetadataClient metadataClient;
 
     @Autowired
     public GeoServerExport(RestTemplate restTemplate, GeoServer geoServer) {
-        this.restTemplate = restTemplate;
         this.geoServer = geoServer;
+        this.metadataClient = new MetadataClient(restTemplate);
     }
 
-    String getAscUri(String dataId) throws MalformedURLException, GisImportException {
-        MetadataClient metadataClient = MetadataClient.getInstance(restTemplate);
+    URI getUriFromDataId(String dataId) throws MalformedURLException, GisImportException {
         Metadata metadata = metadataClient.getMetadata(dataId);
-        String title = metadata.getTitle();
+        Map typeSpecificFields = metadata.getAdditionalTypeSpecificData();
 
+        return URI.create(typeSpecificFields.get("uri").toString());
+    }
+
+    URI getGeoTiffUri(String dataId, String title) throws MalformedURLException, GisImportException {
         GeoServerRESTReader reader = geoServer.getReader();
         RESTLayer layer = reader.getLayer(dataId, title);
 
         if (layer == null) {
             System.out.println("Layer is null");
-            return "";
+            return URI.create("");
         }
 
         return UriBuilder.fromUri("")
@@ -44,17 +49,17 @@ class GeoServerExport {
                 .queryParam("service", "WCS")
                 .queryParam("version", "2.0.1")
                 .queryParam("coverageId", dataId + ":" + title)
-                .queryParam("format", "ArcGrid")
-                .build().toString();
+                .queryParam("format", "GeoTIFF")
+                .build();
     }
 
-    String getShpUri(String dataId, String dataName) throws MalformedURLException, GisImportException {
+    URI getShpUri(String dataId, String dataName) throws MalformedURLException, GisImportException {
         return UriBuilder.fromUri("")
                 .path("wfs")
                 .queryParam("request", "GetFeature")
                 .queryParam("version", "2.0.0")
                 .queryParam("typeName", dataId + ":" + dataName)
                 .queryParam("outputFormat", "shape-zip")
-                .build().toString();
+                .build();
     }
 }

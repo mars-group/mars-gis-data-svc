@@ -6,9 +6,9 @@ import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
 import org.geotools.referencing.CRS;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
-import org.mars_group.gisimport.util.DataType;
 import org.mars_group.gisimport.util.GeoServer;
 import org.mars_group.gisimport.util.GisManager;
+import org.mars_group.gisimport.util.GisType;
 import org.mars_group.metadataclient.MetadataClient;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -63,9 +63,9 @@ class GeoServerImport {
         GeoServerRESTPublisher publisher = geoServer.getPublisher();
         publisher.createWorkspace(dataId);
 
-        DataType dataType = gisManager.getDataType();
+        GisType gisType = gisManager.getGisType();
 
-        MetadataClient metadataClient = MetadataClient.getInstance(restTemplate);
+        MetadataClient metadataClient = new MetadataClient(restTemplate);
 
         Map<String, Double> topLeftBound = new HashMap<>();
         topLeftBound.put("lat", gisManager.getTopRightBound()[0]);
@@ -80,33 +80,33 @@ class GeoServerImport {
         additionalTypeSpecificData.put("bottomRightBound", bottomRightBound);
 
         Map<String, Object> metadata = new HashMap<>();
-        metadata.put("type", dataType.getName());
-        metadata.put("additionalTypeSpecificData", additionalTypeSpecificData);
+        metadata.put("type", gisType.getName());
 
         String dataName = gisManager.getDataName();
 
         try {
-            switch (dataType) {
+            switch (gisType) {
                 case ASC:
                     // We converted the Ascii Grid to GeoTiff, so this imports Geotiff
                     file = new File(uploadDir + File.separator + dataName + ".tif");
                     importSuccess = publisher.publishGeoTIFF(dataId, "Websuite_Asc", title, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
-                    metadata.put("uri", geoServerExport.getAscUri(dataId));
+                    additionalTypeSpecificData.put("uri", geoServerExport.getGeoTiffUri(dataId, title).toString());
                     break;
                 case SHP:
                     importSuccess = publisher.publishShp(dataId, "Websuite_Shapefile", dataName,
                             file, crsCode, "default_point");
-                    metadata.put("uri", geoServerExport.getShpUri(dataId, dataName));
+                    additionalTypeSpecificData.put("uri", geoServerExport.getShpUri(dataId, dataName).toString());
                     break;
                 case TIF:
                     file = new File(uploadDir + File.separator + dataName + ".tif");
                     importSuccess = publisher.publishGeoTIFF(dataId, "Websuite_GeoTiff", title, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
-                    metadata.put("uri", geoServerExport.getAscUri(dataId));
+                    additionalTypeSpecificData.put("uri", geoServerExport.getGeoTiffUri(dataId, title).toString());
                     break;
             }
 
+            metadata.put("additionalTypeSpecificData", additionalTypeSpecificData);
             metadataClient.updateMetadata(dataId, metadata);
 
         } catch (FileNotFoundException e) {
