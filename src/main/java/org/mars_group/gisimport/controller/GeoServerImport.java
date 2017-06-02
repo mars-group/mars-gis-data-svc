@@ -85,24 +85,21 @@ class GeoServerImport {
         String dataName = gisManager.getDataName();
 
         try {
+            String storeName = "WebUI_" + gisType.getName();
+            String defaultStyle = "default_point";
             switch (gisType) {
                 case ASC:
                     // We converted the Ascii Grid to GeoTiff, so this imports Geotiff
-                    file = new File(uploadDir + File.separator + dataName + ".tif");
-                    importSuccess = publisher.publishGeoTIFF(dataId, "Websuite_Asc", title, file, crsCode,
-                            GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
-                    additionalTypeSpecificData.put("uri", geoServerExport.getGeoTiffUri(dataId, title).toString());
-                    break;
-                case SHP:
-                    importSuccess = publisher.publishShp(dataId, "Websuite_Shapefile", dataName,
-                            file, crsCode, "default_point");
-                    additionalTypeSpecificData.put("uri", geoServerExport.getShpUri(dataId, dataName).toString());
-                    break;
+                    // intended fallthrough
                 case TIF:
                     file = new File(uploadDir + File.separator + dataName + ".tif");
-                    importSuccess = publisher.publishGeoTIFF(dataId, "Websuite_GeoTiff", title, file, crsCode,
-                            GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
-                    additionalTypeSpecificData.put("uri", geoServerExport.getGeoTiffUri(dataId, title).toString());
+                    importSuccess = publisher.publishGeoTIFF(dataId, storeName, title, file, crsCode,
+                            GSResourceEncoder.ProjectionPolicy.NONE, defaultStyle, null);
+                    additionalTypeSpecificData.put("uri", geoServerExport.createRasterUri(dataId, title).toString());
+                    break;
+                case SHP:
+                    importSuccess = publisher.publishShp(dataId, storeName, dataName, file, crsCode, defaultStyle);
+                    additionalTypeSpecificData.put("uri", geoServerExport.createVectorUri(dataId, dataName).toString());
                     break;
             }
 

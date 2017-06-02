@@ -14,6 +14,7 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.awt.geom.Point2D;
 import java.io.*;
 import java.net.MalformedURLException;
 
@@ -80,6 +81,19 @@ class FileController {
     @RequestMapping(method = RequestMethod.GET, value = "/gis/{dataId}")
     public ResponseEntity<String> getFile(@PathVariable("dataId") String dataId) throws MalformedURLException, GisImportException {
         return new ResponseEntity<>(geoServerExport.getUriFromDataId(dataId).toString(), HttpStatus.OK);
+    }
+
+    @ResponseBody
+    @RequestMapping(method = RequestMethod.GET, value = "/gis/value")
+    public ResponseEntity<Double> getValue(@RequestParam String dataId, double lon, double lat) {
+        try {
+            Point2D gps = new Point2D.Double(lon, lat);
+            Double result = geoServerExport.getValueFromPixel(dataId, gps);
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (MalformedURLException | GisImportException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @ResponseBody

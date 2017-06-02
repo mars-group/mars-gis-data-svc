@@ -13,10 +13,11 @@ public class GeoServer {
 
     private GeoServerRESTPublisher publisher;
     private GeoServerRESTReader reader;
+    private final String baseUrl = "http://geoserver/geoserver";
 
     private void init() throws MalformedURLException, GisImportException {
         if (publisher == null) {
-            String URI = "http://geoserver/geoserver";
+            String URI = baseUrl;
             String USER = "admin";
             String PASSWORD = "geoserver";
             reader = new GeoServerRESTReader(URI, USER, PASSWORD);
@@ -32,5 +33,9 @@ public class GeoServer {
     public GeoServerRESTReader getReader() throws MalformedURLException, GisImportException {
         init();
         return reader;
+    }
+
+    public String getBaseUrl() {
+        return baseUrl;
     }
 }
