@@ -6,6 +6,7 @@ import org.mars_group.core.ImportState;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.util.GeoServer;
 import org.mars_group.metadataclient.MetadataClient;
+import org.opengis.referencing.operation.TransformException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -88,9 +89,9 @@ class FileController {
     public ResponseEntity<Double> getValue(@RequestParam String dataId, double lon, double lat) {
         try {
             Point2D gps = new Point2D.Double(lon, lat);
-            Double result = geoServerExport.getValueFromPixel(dataId, gps);
+            Double result = geoServerExport.getValue(dataId, gps);
             return new ResponseEntity<>(result, HttpStatus.OK);
-        } catch (MalformedURLException | GisImportException e) {
+        } catch (GisImportException | TransformException | IOException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
