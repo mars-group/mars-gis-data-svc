@@ -100,6 +100,7 @@ class GeoServerImport {
                 case SHP:
                     importSuccess = publisher.publishShp(dataId, storeName, dataName, file, crsCode, defaultStyle);
                     additionalTypeSpecificData.put("uri", geoServerExport.createVectorUri(dataId, dataName).toString());
+                    additionalTypeSpecificData.put("dataName", dataName);
                     break;
             }
 

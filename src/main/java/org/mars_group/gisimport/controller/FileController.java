@@ -2,7 +2,9 @@ package org.mars_group.gisimport.controller;
 
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import org.apache.commons.io.FileUtils;
+import org.geotools.filter.text.cql2.CQLException;
 import org.mars_group.core.ImportState;
+import org.mars_group.gisimport.exceptions.GisExportException;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.util.GeoServer;
 import org.mars_group.metadataclient.MetadataClient;
@@ -86,12 +88,12 @@ class FileController {
 
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, value = "/gis/value")
-    public ResponseEntity<Double> getValue(@RequestParam String dataId, double lon, double lat) {
+    public ResponseEntity<String> getValue(@RequestParam String dataId, double lon, double lat) {
         try {
             Point2D gps = new Point2D.Double(lon, lat);
-            Double result = geoServerExport.getValue(dataId, gps);
+            String result = geoServerExport.getValue(dataId, gps);
             return new ResponseEntity<>(result, HttpStatus.OK);
-        } catch (GisImportException | TransformException | IOException e) {
+        } catch (GisImportException | TransformException | IOException | GisExportException | CQLException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }

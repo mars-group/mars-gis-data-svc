@@ -210,9 +210,7 @@ public class GisManager {
     }
 
     private CoordinateReferenceSystem initShapeFile(String filename) throws IOException {
-        Map<String, Object> map = new HashMap<>();
-
-        map.put("url", new File(filename).toURI().toURL());
+        Map map = Collections.singletonMap("url", new File(filename).toURI().toURL());
         DataStore dataStore = DataStoreFinder.getDataStore(map);
 
         dataName = dataStore.getTypeNames()[0];
