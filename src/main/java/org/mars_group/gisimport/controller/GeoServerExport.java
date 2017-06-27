@@ -133,7 +133,7 @@ class GeoServerExport {
 
         Random rnd = new Random();
 
-        Point pixel = new Point(rnd.nextInt(400), rnd.nextInt(400));
+        Point pixel = new Point(rnd.nextInt(255), rnd.nextInt(255));
 
 //        System.out.println("Pixel: " + pixel);
 
@@ -164,10 +164,12 @@ class GeoServerExport {
     }
 
     private String readVectorValue(String zipFilename, String dataName) throws IOException, CQLException {
-        UnzipUtility unzipper = new UnzipUtility();
-        unzipper.unzip(zipFilename, ".");
-
         File file = new File(dataName + ".shp");
+
+        if(!file.exists()) {
+            UnzipUtility unzipper = new UnzipUtility();
+            unzipper.unzip(zipFilename, ".");
+        }
 
         Map map = Collections.singletonMap("url", file.toURI().toURL());
 
@@ -175,14 +177,18 @@ class GeoServerExport {
         String typeName = dataStore.getTypeNames()[0];
 
         FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(typeName);
-        Filter filter = ECQL.toFilter("NAME = 'Germany'");
+//        Filter filter = ECQL.toFilter("NAME = 'Germany'");
+        Filter filter = Filter.INCLUDE;
 
         FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures(filter);
 
         try (FeatureIterator<SimpleFeature> features = collection.features()) {
-            SimpleFeature feature = features.next();
+            if (features.hasNext()) {
+                SimpleFeature feature = features.next();
 //            System.out.println(feature.getDefaultGeometryProperty().getValue());
-            return feature.getID();
+                return feature.getID();
+            }
+            return "-1";
         }
 
     }
