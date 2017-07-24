@@ -3,27 +3,37 @@ stages:
 - deploy
 
 variables:
-  DOCKER_HOST: "dock-one.mars.haw-hamburg.de:5555"
-  DOCKER_REGISTRY: "artifactory.mars.haw-hamburg.de:5002"
+  DOCKER_HOST: "tcp://localhost:2375"
+  DOCKER_REGISTRY: "nexus.informatik.haw-hamburg.de"
   SERVIE_NAME: "gis-data-svc"
 
 build-and-test:
   stage: build-test
-  image: artifactory.mars.haw-hamburg.de:5000/maven:3.3.9-jdk-8
+  image: $DOCKER_REGISTRY/maven:3.3.9-jdk-8
+  only:
+    - master
   script:
   - mvn install -B
   artifacts:
     paths:
     - ./target/*.jar
+  tags:
+    - k8s
 
 deploy:
   stage: deploy
+  services:
+    - $DOCKER_REGISTRY/docker:stable-dind
+  only:
+    - master
   script:
+    - docker login -u $NEXUS_USER -p $NEXUS_PW $DOCKER_REGISTRY
     - docker build -t $SERVIE_NAME:latest .
     - docker tag $SERVIE_NAME:latest $DOCKER_REGISTRY/$SERVIE_NAME:$CI_PIPELINE_ID
     - docker tag $SERVIE_NAME:latest $DOCKER_REGISTRY/$SERVIE_NAME:latest
     - docker tag $SERVIE_NAME:latest $DOCKER_REGISTRY/$SERVIE_NAME:$CI_COMMIT_SHA
-    - docker login -u $ARTIFACTORY_USER -p $ARTIFACTORY_PW $DOCKER_REGISTRY
     - docker push $DOCKER_REGISTRY/$SERVIE_NAME:$CI_PIPELINE_ID
     - docker push $DOCKER_REGISTRY/$SERVIE_NAME:latest
     - docker push $DOCKER_REGISTRY/$SERVIE_NAME:$CI_COMMIT_SHA
+  tags:
+    - k8s
