@@ -49,7 +49,7 @@ class GeoServerExport {
                 .queryParam("service", "WCS")
                 .queryParam("version", "2.0.1")
                 .queryParam("coverageId", dataId + ":" + title)
-                .queryParam("format", "GeoTIFF")
+                .queryParam("format", "ArcGrid-GZIP")
                 .build();
     }
 
