@@ -5,11 +5,11 @@
 
     <groupId>org.mars-group</groupId>
     <artifactId>gis-data-svc</artifactId>
-    <version>1.0.${bambooBuildNumber}-SNAPSHOT</version>
+    <version>1.0.${CI_PIPELINE_ID}-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>gis-data-svc</name>
-    <description>MARS GIS import</description>
+    <description>MARS GIS Data Service</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -96,14 +96,14 @@
     <repositories>
         <repository>
             <id>local</id>
-            <url>https://artifactory.mars.haw-hamburg.de/artifactory/libs-release</url>
+            <url>https://nexus.informatik.haw-hamburg.de/maven-releases</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
         </repository>
         <repository>
             <id>snapshots</id>
-            <url>https://artifactory.mars.haw-hamburg.de/artifactory/libs-snapshot</url>
+            <url>https://nexus.informatik.haw-hamburg.de/maven-snapshots</url>
             <releases>
                 <enabled>false</enabled>
             </releases>
@@ -118,22 +118,6 @@
             <url>http://maven.geo-solutions.it/</url>
         </repository>
     </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>central</id>
-            <url>https://artifactory.mars.haw-hamburg.de/artifactory/plugins-release</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>snapshots</id>
-            <url>https://artifactory.mars.haw-hamburg.de/artifactory/plugins-snapshot</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-        </pluginRepository>
-    </pluginRepositories>
 
     <build>
         <plugins>

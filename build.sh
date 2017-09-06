@@ -4,5 +4,5 @@
 
 mvn clean package
 eval $(minikube docker-env)
-docker build -t artifactory.mars.haw-hamburg.de:5002/gis-data-svc_master .
+docker build -t nexus.informatik.haw-hamburg.de/gis-data-svc_master .
 kubectl delete pod $(kubectl get pod |grep gis-data |awk '{print $1;}')
