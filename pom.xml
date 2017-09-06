@@ -95,15 +95,15 @@
 
     <repositories>
         <repository>
-            <id>local</id>
-            <url>https://nexus.informatik.haw-hamburg.de/maven-releases</url>
+            <id>central</id>
+            <url>https://nexus.informatik.haw-hamburg.de/repository/maven-public</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
         </repository>
         <repository>
             <id>snapshots</id>
-            <url>https://nexus.informatik.haw-hamburg.de/maven-snapshots</url>
+            <url>https://nexus.informatik.haw-hamburg.de/repository/maven-public</url>
             <releases>
                 <enabled>false</enabled>
             </releases>
@@ -118,6 +118,23 @@
             <url>http://maven.geo-solutions.it/</url>
         </repository>
     </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <url>https://nexus.informatik.haw-hamburg.de/repository/maven-public</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>snapshots</id>
+            <url>https://nexus.informatik.haw-hamburg.de/repository/maven-public</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
 
     <build>
         <plugins>
