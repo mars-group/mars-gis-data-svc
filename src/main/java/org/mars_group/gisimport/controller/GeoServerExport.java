@@ -59,7 +59,7 @@ class GeoServerExport {
                 .queryParam("request", "GetFeature")
                 .queryParam("version", "2.0.0")
                 .queryParam("typeName", dataId + ":" + dataName)
-                .queryParam("outputFormat", "shape-zip")
+                .queryParam("outputFormat", "application/json")
                 .build();
     }
 }

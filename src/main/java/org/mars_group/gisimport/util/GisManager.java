@@ -183,7 +183,7 @@ public class GisManager {
     private CoordinateReferenceSystem initAscFile(String filename) throws IOException, GisValidationException {
         ArcGridReader reader;
         try {
-            Hints hints = new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode("EPSG:27200"));
+            Hints hints = new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode("EPSG:4326"));
             reader = new ArcGridReader(new File(filename), hints);
         } catch (FactoryException e) {
             e.printStackTrace();
