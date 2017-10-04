@@ -88,21 +88,17 @@ class GeoServerImport {
             switch (gisType) {
                 case ASC:
                     // We converted the Ascii Grid to GeoTiff, so this imports Geotiff
-                    file = new File(uploadDir + File.separator + dataName + ".tif");
-                    importSuccess = publisher.publishGeoTIFF(dataId, "Websuite_Asc", title, file, crsCode,
-                            GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
-                    additionalTypeSpecificData.put("uri", geoServerExport.getGeoTiffUri(dataId, title).toString());
-                    break;
-                case SHP:
-                    importSuccess = publisher.publishShp(dataId, "Websuite_Shapefile", dataName,
-                            file, crsCode, "default_point");
-                    additionalTypeSpecificData.put("uri", geoServerExport.getShpUri(dataId, dataName).toString());
-                    break;
                 case TIF:
                     file = new File(uploadDir + File.separator + dataName + ".tif");
-                    importSuccess = publisher.publishGeoTIFF(dataId, "Websuite_GeoTiff", title, file, crsCode,
+                    importSuccess = publisher.publishGeoTIFF(dataId, "Webui_Raster", title, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
-                    additionalTypeSpecificData.put("uri", geoServerExport.getGeoTiffUri(dataId, title).toString());
+                    additionalTypeSpecificData.put("uri", geoServerExport.generateRasterUri(dataId, title).toString());
+                    break;
+                case GJSON:
+                case SHP:
+                    importSuccess = publisher.publishShp(dataId, "Websuite_Vector", dataName,
+                            file, crsCode, "default_point");
+                    additionalTypeSpecificData.put("uri", geoServerExport.generateVectorUri(dataId, dataName).toString());
                     break;
             }
 

@@ -34,7 +34,7 @@ class GeoServerExport {
         return URI.create(typeSpecificFields.get("uri").toString());
     }
 
-    URI getGeoTiffUri(String dataId, String title) throws MalformedURLException, GisImportException {
+    URI generateRasterUri(String dataId, String title) throws MalformedURLException, GisImportException {
         GeoServerRESTReader reader = geoServer.getReader();
         RESTLayer layer = reader.getLayer(dataId, title);
 
@@ -53,7 +53,7 @@ class GeoServerExport {
                 .build();
     }
 
-    URI getShpUri(String dataId, String dataName) throws MalformedURLException, GisImportException {
+    URI generateVectorUri(String dataId, String dataName) throws MalformedURLException, GisImportException {
         return UriBuilder.fromUri("")
                 .path("wfs")
                 .queryParam("request", "GetFeature")
