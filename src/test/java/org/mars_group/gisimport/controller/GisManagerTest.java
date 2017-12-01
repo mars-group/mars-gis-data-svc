@@ -1,7 +1,7 @@
 package org.mars_group.gisimport.controller;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.CanWriteFileFilter;
+import
+        org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -9,14 +9,10 @@ import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
 import org.mars_group.gisimport.util.GisManager;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.springframework.util.SocketUtils;
 
-import java.awt.SplashScreen;
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
-
-import javax.swing.plaf.synth.SynthOptionPaneUI;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;

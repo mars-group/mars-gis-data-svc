@@ -2,6 +2,7 @@ package org.mars_group.gisimport.controller;
 
 import it.geosolutions.geoserver.rest.GeoServerRESTReader;
 import it.geosolutions.geoserver.rest.decoder.RESTLayer;
+import org.apache.commons.io.FilenameUtils;
 import org.mars_group.core.Metadata;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.util.GeoServer;
@@ -27,7 +28,7 @@ class GeoServerExport {
         this.metadataClient = new MetadataClient(restTemplate);
     }
 
-    URI getUriFromDataId(String dataId) throws MalformedURLException, GisImportException {
+    URI getUriFromDataId(String dataId) {
         Metadata metadata = metadataClient.getMetadata(dataId);
         Map typeSpecificFields = metadata.getAdditionalTypeSpecificData();
 
@@ -36,7 +37,9 @@ class GeoServerExport {
 
     URI generateRasterUri(String dataId, String title) throws MalformedURLException, GisImportException {
         GeoServerRESTReader reader = geoServer.getReader();
-        RESTLayer layer = reader.getLayer(dataId, title);
+        String baseName = FilenameUtils.getBaseName(title);
+
+        RESTLayer layer = reader.getLayer(dataId, baseName);
 
         if (layer == null) {
             System.out.println("Layer is null");
@@ -48,12 +51,12 @@ class GeoServerExport {
                 .queryParam("request", "GetCoverage")
                 .queryParam("service", "WCS")
                 .queryParam("version", "2.0.1")
-                .queryParam("coverageId", dataId + ":" + title)
+                .queryParam("coverageId", dataId + ":" + baseName)
                 .queryParam("format", "ArcGrid-GZIP")
                 .build();
     }
 
-    URI generateVectorUri(String dataId, String dataName) throws MalformedURLException, GisImportException {
+    URI generateVectorUri(String dataId, String dataName) {
         return UriBuilder.fromUri("")
                 .path("wfs")
                 .queryParam("request", "GetFeature")

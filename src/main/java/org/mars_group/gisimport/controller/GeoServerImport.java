@@ -3,6 +3,7 @@ package org.mars_group.gisimport.controller;
 
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
+import org.apache.commons.io.FilenameUtils;
 import org.geotools.referencing.CRS;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import javax.ws.rs.NotSupportedException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -63,26 +65,14 @@ class GeoServerImport {
         GeoServerRESTPublisher publisher = geoServer.getPublisher();
         publisher.createWorkspace(dataId);
 
+
         GisType gisType = gisManager.getGisType();
-
-        MetadataClient metadataClient = new MetadataClient(restTemplate);
-
-        Map<String, Double> topLeftBound = new HashMap<>();
-        topLeftBound.put("lat", gisManager.getTopRightBound()[0]);
-        topLeftBound.put("lng", gisManager.getTopRightBound()[1]);
-
-        Map<String, Double> bottomRightBound = new HashMap<>();
-        bottomRightBound.put("lat", gisManager.getBottomLeftBound()[0]);
-        bottomRightBound.put("lng", gisManager.getBottomLeftBound()[1]);
-
-        Map<String, Object> additionalTypeSpecificData = new HashMap<>();
-        additionalTypeSpecificData.put("topLeftBound", topLeftBound);
-        additionalTypeSpecificData.put("bottomRightBound", bottomRightBound);
 
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("type", gisType.getName());
 
         String dataName = gisManager.getDataName();
+        Map<String, Object> additionalTypeSpecificData = calculateMetadataBounds(gisManager);
 
         try {
             switch (gisType) {
@@ -90,19 +80,28 @@ class GeoServerImport {
                     // We converted the Ascii Grid to GeoTiff, so this imports Geotiff
                 case TIF:
                     file = new File(uploadDir + File.separator + dataName + ".tif");
-                    importSuccess = publisher.publishGeoTIFF(dataId, "Webui_Raster", title, file, crsCode,
+
+                    String baseName = FilenameUtils.getBaseName(title);
+
+                    importSuccess = publisher.publishGeoTIFF(dataId, "Webui_Raster", baseName, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
+
                     additionalTypeSpecificData.put("uri", geoServerExport.generateRasterUri(dataId, title).toString());
                     break;
                 case GJSON:
+                    // Todo: Implement
+                    throw new NotSupportedException("GeoJSON is not supported by the gis-data-svc jet.");
                 case SHP:
-                    importSuccess = publisher.publishShp(dataId, "Websuite_Vector", dataName,
+                    importSuccess = publisher.publishShp(dataId, "Webui_Vector", dataName,
                             file, crsCode, "default_point");
+
                     additionalTypeSpecificData.put("uri", geoServerExport.generateVectorUri(dataId, dataName).toString());
                     break;
             }
 
             metadata.put("additionalTypeSpecificData", additionalTypeSpecificData);
+
+            MetadataClient metadataClient = new MetadataClient(restTemplate);
             metadataClient.updateMetadata(dataId, metadata);
 
         } catch (FileNotFoundException e) {
@@ -115,6 +114,21 @@ class GeoServerImport {
             publisher.removeWorkspace(dataId, false);
             throw new GisImportException(uploadFilename + ": error inside the GeoServer! Import failed");
         }
+    }
+
+    private Map<String, Object> calculateMetadataBounds(GisManager gisManager) {
+        Map<String, Double> topLeftBound = new HashMap<>();
+        topLeftBound.put("lat", gisManager.getTopRightBound()[0]);
+        topLeftBound.put("lng", gisManager.getTopRightBound()[1]);
+
+        Map<String, Double> bottomRightBound = new HashMap<>();
+        bottomRightBound.put("lat", gisManager.getBottomLeftBound()[0]);
+        bottomRightBound.put("lng", gisManager.getBottomLeftBound()[1]);
+
+        Map<String, Object> additionalTypeSpecificData = new HashMap<>();
+        additionalTypeSpecificData.put("topLeftBound", topLeftBound);
+        additionalTypeSpecificData.put("bottomRightBound", bottomRightBound);
+        return additionalTypeSpecificData;
     }
 
 }
