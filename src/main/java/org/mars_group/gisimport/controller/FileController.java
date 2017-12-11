@@ -37,12 +37,6 @@ class FileController {
         this.geoServerExport = geoServerExport;
     }
 
-    @ResponseBody
-    @RequestMapping(method = RequestMethod.GET, value = "/hello")
-    public ResponseEntity<String> getFile() {
-        return new ResponseEntity<>("Hello Gis-data-svc user", HttpStatus.OK);
-    }
-
     /**
      * import Geo files
      *
@@ -78,7 +72,7 @@ class FileController {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, value = "/gis/{dataId}")
-    public ResponseEntity<String> getFile(@PathVariable("dataId") String dataId) throws MalformedURLException, GisImportException {
+    public ResponseEntity<String> getFile(@PathVariable("dataId") String dataId) {
         return new ResponseEntity<>(geoServerExport.getUriFromDataId(dataId).toString(), HttpStatus.OK);
     }
 
