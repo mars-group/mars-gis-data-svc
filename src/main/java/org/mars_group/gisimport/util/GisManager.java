@@ -45,7 +45,7 @@ public class GisManager {
      * @param uploadDir the upload directory
      * @param filename  this has to be either .zip .tif or .asc
      */
-    public GisManager(String uploadDir, String filename) throws IOException, GisValidationException, GisImportException {
+    public GisManager(String uploadDir, String filename) throws IOException, GisValidationException {
         this.uploadDir = uploadDir;
         topRightBound = new double[2];
         bottomLeftBound = new double[2];
@@ -169,7 +169,7 @@ public class GisManager {
 
     private void removeUnsupportedFiles() {
         for (String filename : unsupportedFiles) {
-            new File(uploadDir + File.separator + filename).delete();
+            boolean deleted = new File(uploadDir + File.separator + filename).delete();
         }
     }
 
@@ -197,19 +197,19 @@ public class GisManager {
 
         setBounds(coverage.getGridGeometry().getEnvelope2D().getBounds());
 
-        return coverage.getCoordinateReferenceSystem2D();
+        return handleInvalidCrs(coverage.getCoordinateReferenceSystem2D());
 
     }
 
-    private CoordinateReferenceSystem initGeoTiffFile(String filename) throws IOException {
+    private CoordinateReferenceSystem initGeoTiffFile(String filename) throws IOException, GisValidationException {
         GridCoverage2D coverage = new GeoTiffReader(filename).read(null);
 
         setBounds(coverage.getGridGeometry().getEnvelope2D().getBounds());
 
-        return coverage.getCoordinateReferenceSystem2D();
+        return handleInvalidCrs(coverage.getCoordinateReferenceSystem2D());
     }
 
-    private CoordinateReferenceSystem initShapeFile(String filename) throws IOException {
+    private CoordinateReferenceSystem initShapeFile(String filename) throws IOException, GisValidationException {
         Map<String, Object> map = new HashMap<>();
 
         map.put("url", new File(filename).toURI().toURL());
@@ -220,7 +220,20 @@ public class GisManager {
 
         setBounds(source.getBounds());
 
-        return source.getInfo().getCRS();
+        return handleInvalidCrs(source.getInfo().getCRS());
+    }
+
+    private CoordinateReferenceSystem handleInvalidCrs(CoordinateReferenceSystem crs) throws GisValidationException {
+        if (crs == null) {
+            try {
+                crs = CRS.decode("EPSG:4326");
+            } catch (FactoryException e) {
+                e.printStackTrace();
+                throw new GisValidationException(e.getMessage());
+            }
+        }
+
+        return crs;
     }
 
     private void setBounds(ReferencedEnvelope bounds) {

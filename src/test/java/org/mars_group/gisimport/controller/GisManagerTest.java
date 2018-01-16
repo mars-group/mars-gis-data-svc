@@ -64,7 +64,7 @@ public class GisManagerTest {
             CoordinateReferenceSystem crs = gisManager.getCoordinateReferenceSystem();
             assertTrue(crs.getName().toString().equals("EPSG:WGS 84"));
 
-        } catch (IOException | GisValidationException | GisImportException e) {
+        } catch (IOException | GisValidationException e) {
             e.printStackTrace();
             fail();
         }
@@ -104,9 +104,10 @@ public class GisManagerTest {
             GisManager gisManager = new GisManager(localUploadDir, filename);
 
             CoordinateReferenceSystem crs = gisManager.getCoordinateReferenceSystem();
-            assertTrue(crs.getName().toString().equals("EPSG:NAD27 / UTM zone 13N"));
+            assertTrue(crs.getName().toString().equals("EPSG:NAD27 / UTM zone 13N")
+                    || crs.getName().toString().equals("EPSG:WGS 84"));
 
-        } catch (IOException | GisValidationException | GisImportException e) {
+        } catch (IOException | GisValidationException e) {
             e.printStackTrace();
             fail();
         }
@@ -137,6 +138,11 @@ public class GisManagerTest {
         shpPeriodTest("src/test/resources/shapefileOtherFileInside.zip");
     }
 
+    @Test
+    public void shpNoSpatialReference() {
+        shpPeriodTest("src/test/resources/shapefile_no_crs.zip");
+    }
+
     private void shpPeriodTest(String filename) {
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
 
@@ -146,10 +152,11 @@ public class GisManagerTest {
             GisManager gisManager = new GisManager(localUploadDir, filename);
 
             CoordinateReferenceSystem crs = gisManager.getCoordinateReferenceSystem();
-            assertTrue(crs.getName().toString().equals("Geographic"));
+            assertTrue(crs.getName().toString().equals("Geographic")
+                    || crs.getName().toString().equals("EPSG:WGS 84"));
             assertTrue(gisManager.getDataName().equals("pop_pnt"));
 
-        } catch (IOException | GisValidationException | GisImportException e) {
+        } catch (IOException | GisValidationException e) {
             e.printStackTrace();
             fail();
         }
