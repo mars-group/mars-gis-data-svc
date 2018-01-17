@@ -6,12 +6,15 @@ import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureSource;
 import org.geotools.factory.Hints;
+import org.geotools.feature.FeatureCollection;
 import org.geotools.gce.arcgrid.ArcGridReader;
 import org.geotools.gce.geotiff.GeoTiffReader;
 import org.geotools.gce.geotiff.GeoTiffWriter;
+import org.geotools.geojson.feature.FeatureJSON;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
-import org.mars_group.gisimport.exceptions.GisImportException;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -59,6 +62,13 @@ public class GisManager {
                 coordinateReferenceSystem = initAscFile(filename);
                 break;
 
+            case "geojson":
+            case "json":
+                dataName = FilenameUtils.getBaseName(filename);
+                gisType = GisType.GJSON;
+                coordinateReferenceSystem = initGeoJsonFile(filename);
+                break;
+
             case "tif":
                 dataName = FilenameUtils.getBaseName(filename);
                 gisType = GisType.TIF;
@@ -82,6 +92,9 @@ public class GisManager {
                 switch (gisType) {
                     case ASC:
                         coordinateReferenceSystem = initAscFile(fileBasename + ".asc");
+                        break;
+                    case GJSON:
+                        coordinateReferenceSystem = initGeoJsonFile(fileBasename); // might be "json" or "geojson"
                         break;
                     case TIF:
                         coordinateReferenceSystem = initGeoTiffFile(fileBasename + ".tif");
@@ -125,6 +138,11 @@ public class GisManager {
             switch (FilenameUtils.getExtension(zip.getName()).toLowerCase()) {
                 case "asc":
                     gisType = GisType.ASC;
+                    dataName = FilenameUtils.getBaseName(zip.getName());
+                    break;
+                case "geojson":
+                case "json":
+                    gisType = GisType.GJSON;
                     dataName = FilenameUtils.getBaseName(zip.getName());
                     break;
                 case "tif":
@@ -198,7 +216,42 @@ public class GisManager {
         setBounds(coverage.getGridGeometry().getEnvelope2D().getBounds());
 
         return handleInvalidCrs(coverage.getCoordinateReferenceSystem2D());
+    }
 
+    private String getJsonExtension(String basename) throws GisValidationException {
+        System.out.println(basename);
+
+        File json = new File(basename + ".json");
+        File geojson = new File(basename + ".geojson");
+
+        if (json.exists() && !json.isDirectory()) {
+            return ".json";
+        } else if (geojson.exists() && !geojson.isDirectory()) {
+            return ".geojson";
+        }
+
+        throw new GisValidationException("GeoJSON ending inside .zip is not suppored. Please name it .json or .geojson");
+    }
+
+    private CoordinateReferenceSystem initGeoJsonFile(String filename) throws IOException, GisValidationException {
+        if (FilenameUtils.getExtension(filename).length() < 1) {
+            filename += getJsonExtension(filename);
+        }
+
+        JSONParser parser = new JSONParser();
+
+        Object obj;
+        try {
+            obj = parser.parse(new java.io.FileReader(filename));
+        } catch (ParseException e) {
+            e.printStackTrace();
+            throw new GisValidationException("Failed parsing GeoJSON: " + e.getMessage());
+        }
+
+        FeatureJSON fJSON = new FeatureJSON();
+        FeatureCollection fc = fJSON.readFeatureCollection(obj.toString());
+
+        return handleInvalidCrs(fc.getBounds().getCoordinateReferenceSystem());
     }
 
     private CoordinateReferenceSystem initGeoTiffFile(String filename) throws IOException, GisValidationException {

@@ -1,11 +1,9 @@
 package org.mars_group.gisimport.controller;
 
-import
-        org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
 import org.mars_group.gisimport.util.GisManager;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -178,6 +176,43 @@ public class GisManagerTest {
         try {
             FileUtils.deleteDirectory(new File(uploadDir));
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void initGeoJsonFile_JsonExtension_Test() {
+        geoJsonTest("src/test/resources/geojson.json");
+    }
+
+    @Test
+    public void initGeoJsonFile_GeojsonExtension_Test() {
+        geoJsonTest("src/test/resources/geojson.geojson");
+    }
+
+    @Test
+    public void initGeoJsonFile_JsonExtensionInsideZip_Test() {
+        geoJsonTest("src/test/resources/geojson_json.zip");
+    }
+
+    @Test
+    public void initGeoJsonFile_GeoJsonExtensionInsideZip_Test() {
+        geoJsonTest("src/test/resources/geojson_geojson.zip");
+    }
+
+    private void geoJsonTest(String filename) {
+        assertTrue(filename + " doesn't exists!", new File(filename).exists());
+
+        String localUploadDir = createSpecificUploadDir();
+        try {
+            GisManager gisManager = new GisManager(localUploadDir, filename);
+
+            CoordinateReferenceSystem crs = gisManager.getCoordinateReferenceSystem();
+            assertTrue(crs.getName().getCode().equals("WGS84"));
+
+            assertTrue(gisManager.getDataName().equals("geojson"));
+
+        } catch (IOException | GisValidationException e) {
             e.printStackTrace();
         }
     }
