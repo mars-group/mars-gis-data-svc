@@ -219,8 +219,6 @@ public class GisManager {
     }
 
     private String getJsonExtension(String basename) throws GisValidationException {
-        System.out.println(basename);
-
         File json = new File(basename + ".json");
         File geojson = new File(basename + ".geojson");
 

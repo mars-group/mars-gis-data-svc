@@ -26,6 +26,15 @@ public class GisManagerTest {
         }
     }
 
+    @AfterClass
+    public static void cleanUp() {
+        try {
+            FileUtils.deleteDirectory(new File(uploadDir));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Test
     public void asciiGridTest() {
         asciiGridTest("src/test/resources/ascii_grid.asc");
@@ -169,15 +178,6 @@ public class GisManagerTest {
         }
 
         return localUploadDir;
-    }
-
-    @AfterClass
-    public static void cleanUp() {
-        try {
-            FileUtils.deleteDirectory(new File(uploadDir));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test

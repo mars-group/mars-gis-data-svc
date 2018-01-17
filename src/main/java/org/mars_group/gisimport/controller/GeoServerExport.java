@@ -42,7 +42,6 @@ class GeoServerExport {
         RESTLayer layer = reader.getLayer(dataId, baseName);
 
         if (layer == null) {
-            System.out.println("Layer is null");
             return URI.create("");
         }
 
