@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import javax.ws.rs.NotSupportedException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -39,39 +38,23 @@ class GeoServerImport {
         this.geoServerExport = geoServerExport;
     }
 
-    void handleImport(String uploadDir, String uploadFilename, String dataId, String title) throws GisImportException, MalformedURLException {
+    void handleImport(String uploadDir, String uploadFilename, String dataId, String title) throws GisImportException,
+            MalformedURLException {
+        File file = new File(uploadDir + File.separator + uploadFilename);
+
+        GisManager gisManager = getGisManager(uploadDir, file);
+        GisType gisType = gisManager.getGisType();
+        String dataName = gisManager.getDataName();
+
         title = title.replaceAll(" ", "");
 
-        File file = new File(uploadDir + File.separator + uploadFilename);
-        GisManager gisManager;
-
-        try {
-            gisManager = new GisManager(uploadDir, file.getAbsolutePath());
-        } catch (IOException | GisValidationException e) {
-            e.printStackTrace();
-            throw new GisImportException(e.getMessage());
-        }
-
-        String crsCode;
-        try {
-            CoordinateReferenceSystem crs = gisManager.getCoordinateReferenceSystem();
-            crsCode = CRS.lookupIdentifier(crs, true);
-        } catch (FactoryException e) {
-            e.printStackTrace();
-            throw new GisImportException(e.getMessage());
-        }
-
         boolean importSuccess = false;
+
         GeoServerRESTPublisher publisher = geoServer.getPublisher();
         publisher.createWorkspace(dataId);
 
+        String crsCode = getCrsCode(gisManager);
 
-        GisType gisType = gisManager.getGisType();
-
-        Map<String, Object> metadata = new HashMap<>();
-        metadata.put("type", gisType.getName());
-
-        String dataName = gisManager.getDataName();
         Map<String, Object> additionalTypeSpecificData = calculateMetadataBounds(gisManager);
 
         try {
@@ -79,9 +62,9 @@ class GeoServerImport {
                 case ASC:
                     // We converted the Ascii Grid to GeoTiff, so this imports Geotiff
                 case TIF:
-                    file = new File(uploadDir + File.separator + dataName + ".tif");
-
                     String baseName = FilenameUtils.getBaseName(title);
+
+                    file = new File(uploadDir + File.separator + dataName + ".tif");
 
                     importSuccess = publisher.publishGeoTIFF(dataId, "Webui_Raster", baseName, file, crsCode,
                             GSResourceEncoder.ProjectionPolicy.NONE, "default_point", null);
@@ -90,30 +73,65 @@ class GeoServerImport {
                     break;
                 case GJSON:
                     // Todo: Implement
-                    throw new NotSupportedException("GeoJSON is not supported by the gis-data-svc jet.");
+                    throw new GisImportException("GeoJSON is not supported by the GeoServer, so this does not work.");
                 case SHP:
-                    importSuccess = publisher.publishShp(dataId, "Webui_Vector", dataName,
-                            file, crsCode, "default_point");
+                    importSuccess = publisher.publishShp(dataId, "Webui_Vector", dataName, file, crsCode,
+                            "default_point");
 
-                    additionalTypeSpecificData.put("uri", geoServerExport.generateVectorUri(dataId, dataName).toString());
+                    additionalTypeSpecificData.put("uri", geoServerExport.generateVectorUri(dataId,
+                            dataName).toString());
                     break;
             }
 
-            metadata.put("additionalTypeSpecificData", additionalTypeSpecificData);
-
-            MetadataClient metadataClient = new MetadataClient(restTemplate);
-            metadataClient.updateMetadata(dataId, metadata);
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            publisher.removeWorkspace(dataId, false);
-            throw new GisImportException(e.getMessage());
+            handleFailedImport(dataId, publisher, uploadFilename + ": " + e.getMessage());
+            return;
         }
 
         if (!importSuccess) {
-            publisher.removeWorkspace(dataId, false);
-            throw new GisImportException(uploadFilename + ": error inside the GeoServer! Import failed");
+            handleFailedImport(dataId, publisher, uploadFilename + ": error inside the GeoServer! Import failed");
         }
+
+        writeMetadata(dataId, gisType, additionalTypeSpecificData);
+    }
+
+    private GisManager getGisManager(String uploadDir, File file) throws GisImportException {
+        GisManager gisManager;
+        try {
+            gisManager = new GisManager(uploadDir, file.getAbsolutePath());
+        } catch (IOException | GisValidationException e) {
+            e.printStackTrace();
+            throw new GisImportException(e.getMessage());
+        }
+        return gisManager;
+    }
+
+    private String getCrsCode(GisManager gisManager) throws GisImportException {
+        String crsCode;
+        try {
+            CoordinateReferenceSystem crs = gisManager.getCoordinateReferenceSystem();
+            crsCode = CRS.lookupIdentifier(crs, true);
+        } catch (FactoryException e) {
+            e.printStackTrace();
+            throw new GisImportException(e.getMessage());
+        }
+        return crsCode;
+    }
+
+    private void writeMetadata(String dataId, GisType gisType, Map<String, Object> additionalTypeSpecificData) {
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("type", gisType.getName());
+        metadata.put("additionalTypeSpecificData", additionalTypeSpecificData);
+
+        MetadataClient metadataClient = new MetadataClient(restTemplate);
+        metadataClient.updateMetadata(dataId, metadata);
+    }
+
+    private void handleFailedImport(String dataId, GeoServerRESTPublisher publisher, String message)
+            throws GisImportException {
+        publisher.removeWorkspace(dataId, false);
+        throw new GisImportException(message);
     }
 
     private Map<String, Object> calculateMetadataBounds(GisManager gisManager) {

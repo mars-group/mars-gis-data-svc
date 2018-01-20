@@ -153,7 +153,7 @@ public class GisManager {
                     gisType = GisType.SHP;
                     dataName = zip.getName();
                     break;
-                // all files a ShapeFile can contain. Everything else is not allowed
+                // all files a ShapeFile can contain.
                 case "shx":
                 case "dbf":
                 case "prj":
@@ -171,6 +171,7 @@ public class GisManager {
                 case "qix":
                     break;
                 default:
+                    // Everything else is not allowed.
                     unsupportedFiles.add(zip.getName());
             }
         }
@@ -187,7 +188,12 @@ public class GisManager {
 
     private void removeUnsupportedFiles() {
         for (String filename : unsupportedFiles) {
+            System.out.println("Deleting: " + filename);
             boolean deleted = new File(uploadDir + File.separator + filename).delete();
+
+            if (!deleted) {
+                System.out.println("Deletion failed: " + filename);
+            }
         }
     }
 
@@ -209,7 +215,8 @@ public class GisManager {
         }
         GridCoverage2D coverage = reader.read(null);
 
-        GeoTiffWriter writer = new GeoTiffWriter(new File(uploadDir + File.separator + FilenameUtils.getBaseName(filename) + ".tif"));
+        GeoTiffWriter writer = new GeoTiffWriter(new File(uploadDir + File.separator
+                + FilenameUtils.getBaseName(filename) + ".tif"));
         writer.write(coverage, null);
         writer.dispose();
 
@@ -318,4 +325,5 @@ public class GisManager {
     public double[] getBottomLeftBound() {
         return bottomLeftBound;
     }
+
 }

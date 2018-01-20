@@ -10,4 +10,4 @@ mvn clean package
 docker build -t ${DOCKER_REGISTRY}/${SERVICE_NAME}:dev -f Dockerfile_dev .
 docker push ${DOCKER_REGISTRY}/${SERVICE_NAME}:dev
 
-kubectl -n mars-mars-beta delete pod --selector=service=gis-data-svc --force
+kubectl -n mars-mars-beta delete pod -l service=gis-data-svc --force

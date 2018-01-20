@@ -30,7 +30,8 @@ class FileController {
     private final GeoServerExport geoServerExport;
 
     @Autowired
-    public FileController(RestTemplate restTemplate, GeoServerImport geoServerImport, GeoServer geoServer, GeoServerExport geoServerExport) {
+    public FileController(RestTemplate restTemplate, GeoServerImport geoServerImport, GeoServer geoServer,
+                          GeoServerExport geoServerExport) {
         this.restTemplate = restTemplate;
         this.geoServerImport = geoServerImport;
         this.geoServer = geoServer;
@@ -47,7 +48,8 @@ class FileController {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST, value = "/gis")
-    public ResponseEntity<String> postFile(@RequestParam String dataId, @RequestParam String title, @RequestParam String filename) {
+    public ResponseEntity<String> postFile(@RequestParam String dataId, @RequestParam String title,
+                                           @RequestParam String filename) {
         String uri = "http://file-svc/files/";
 
         return restTemplate.execute(uri + dataId, HttpMethod.GET, null, response -> {
@@ -78,7 +80,8 @@ class FileController {
 
     @ResponseBody
     @RequestMapping(method = RequestMethod.DELETE, value = "/gis/{dataId}")
-    public ResponseEntity<String> deleteFile(@PathVariable("dataId") String dataId) throws MalformedURLException, GisImportException {
+    public ResponseEntity<String> deleteFile(@PathVariable("dataId") String dataId) throws MalformedURLException,
+            GisImportException {
         GeoServerRESTPublisher publisher = geoServer.getPublisher();
         boolean result = publisher.removeWorkspace(dataId, true);
 
