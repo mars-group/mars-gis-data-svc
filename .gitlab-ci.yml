@@ -17,9 +17,9 @@ cache:
 
 build-and-test:
   stage: build-test
-  image: $DOCKER_REGISTRY/maven:3.3.9-jdk-8
+  image: $DOCKER_REGISTRY/maven:3-jdk-8-alpine
   script:
-  - mvn install -B
+  - mvn clean package
   artifacts:
     paths:
     - ./target/*.jar
