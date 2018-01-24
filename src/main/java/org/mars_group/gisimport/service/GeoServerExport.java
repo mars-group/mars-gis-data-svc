@@ -1,11 +1,10 @@
-package org.mars_group.gisimport.controller;
+package org.mars_group.gisimport.service;
 
 import it.geosolutions.geoserver.rest.GeoServerRESTReader;
 import it.geosolutions.geoserver.rest.decoder.RESTLayer;
 import org.apache.commons.io.FilenameUtils;
 import org.mars_group.core.Metadata;
-import org.mars_group.gisimport.exceptions.GisImportException;
-import org.mars_group.gisimport.util.GeoServer;
+import org.mars_group.gisimport.web.GeoServerController;
 import org.mars_group.metadataclient.MetadataClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,26 +16,26 @@ import java.net.URI;
 import java.util.Map;
 
 @Component
-class GeoServerExport {
+public class GeoServerExport {
 
-    private final GeoServer geoServer;
+    private final GeoServerController geoServerController;
     private final MetadataClient metadataClient;
 
     @Autowired
-    public GeoServerExport(RestTemplate restTemplate, GeoServer geoServer) {
-        this.geoServer = geoServer;
+    public GeoServerExport(RestTemplate restTemplate, GeoServerController geoServerController) {
+        this.geoServerController = geoServerController;
         this.metadataClient = new MetadataClient(restTemplate);
     }
 
-    URI getUriFromDataId(String dataId) {
+    public URI getUriFromDataId(String dataId) {
         Metadata metadata = metadataClient.getMetadata(dataId);
         Map typeSpecificFields = metadata.getAdditionalTypeSpecificData();
 
         return URI.create(typeSpecificFields.get("uri").toString());
     }
 
-    URI generateRasterUri(String dataId, String title) throws MalformedURLException, GisImportException {
-        GeoServerRESTReader reader = geoServer.getReader();
+    URI generateRasterUri(String dataId, String title) throws MalformedURLException {
+        GeoServerRESTReader reader = geoServerController.getReader();
         String baseName = FilenameUtils.getBaseName(title);
 
         RESTLayer layer = reader.getLayer(dataId, baseName);

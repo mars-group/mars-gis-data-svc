@@ -13,15 +13,15 @@ basePath: /
 tags:
   - name: health
     description: Health
-  - name: file-controller
+  - name: file-web
     description: File Controller
-  - name: basic-error-controller
+  - name: basic-error-web
     description: Basic Error Controller
 paths:
   /error:
     get:
       tags:
-        - basic-error-controller
+        - basic-error-web
       summary: errorHtml
       operationId: errorHtmlUsingGET
       consumes:
@@ -41,7 +41,7 @@ paths:
           description: Not Found
     head:
       tags:
-        - basic-error-controller
+        - basic-error-web
       summary: errorHtml
       operationId: errorHtmlUsingHEAD
       consumes:
@@ -61,7 +61,7 @@ paths:
           description: Forbidden
     post:
       tags:
-        - basic-error-controller
+        - basic-error-web
       summary: errorHtml
       operationId: errorHtmlUsingPOST
       consumes:
@@ -83,7 +83,7 @@ paths:
           description: Not Found
     put:
       tags:
-        - basic-error-controller
+        - basic-error-web
       summary: errorHtml
       operationId: errorHtmlUsingPUT
       consumes:
@@ -105,7 +105,7 @@ paths:
           description: Not Found
     delete:
       tags:
-        - basic-error-controller
+        - basic-error-web
       summary: errorHtml
       operationId: errorHtmlUsingDELETE
       consumes:
@@ -125,7 +125,7 @@ paths:
           description: Forbidden
     options:
       tags:
-        - basic-error-controller
+        - basic-error-web
       summary: errorHtml
       operationId: errorHtmlUsingOPTIONS
       consumes:
@@ -145,7 +145,7 @@ paths:
           description: Forbidden
     patch:
       tags:
-        - basic-error-controller
+        - basic-error-web
       summary: errorHtml
       operationId: errorHtmlUsingPATCH
       consumes:
@@ -166,7 +166,7 @@ paths:
   /gis:
     post:
       tags:
-        - file-controller
+        - file-web
       summary: postFile
       operationId: postFileUsingPOST
       consumes:
@@ -205,8 +205,8 @@ paths:
   '/gis/{dataId}':
     get:
       tags:
-        - file-controller
-      summary: getFile
+        - file-web
+      summary: getFileUrl
       operationId: getFileUsingGET
       consumes:
         - application/json
@@ -231,7 +231,7 @@ paths:
           description: Not Found
     delete:
       tags:
-        - file-controller
+        - file-web
       summary: deleteFile
       operationId: deleteFileUsingDELETE
       consumes:
