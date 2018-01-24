@@ -1,4 +1,4 @@
-package org.mars_group.gisimport.controller;
+package org.mars_group.gisimport.web;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
