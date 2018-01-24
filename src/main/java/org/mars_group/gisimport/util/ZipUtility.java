@@ -24,7 +24,7 @@ public class ZipUtility {
     public static void unzip(String filename, String destDirectory) throws IOException {
         File destDir = new File(destDirectory);
         if (!destDir.exists()) {
-            Assert.isTrue(destDir.mkdir());
+            Assert.isTrue(destDir.mkdir(), "Creating directory failed: " + destDir);
         }
 
         ZipInputStream zipIn = new ZipInputStream(new FileInputStream(filename));
