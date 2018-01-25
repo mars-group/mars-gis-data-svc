@@ -26,13 +26,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 public class GisValidator {
     private GisType gisType;
     private String shpBasename;
     private String filename;
+    private String timeseriesFilename;
     private double[] topRightBound;
     private double[] bottomLeftBound;
     private CoordinateReferenceSystem coordinateReferenceSystem;
@@ -42,8 +42,7 @@ public class GisValidator {
      *
      * @param filename Path to the file. This has to be either .zip .tif or .asc
      */
-    public GisValidator(String filename) throws IOException, FactoryException,
-            GisValidationException {
+    public GisValidator(String filename) throws IOException, FactoryException, GisValidationException {
         this.filename = filename;
 
         topRightBound = new double[2];
@@ -53,13 +52,13 @@ public class GisValidator {
             String unzipDir = FilenameUtils.getPath(this.filename);
             ZipUtility.unzip(this.filename, unzipDir);
 
-            this.filename = getFilenameFromZipDir(unzipDir);
+            setFilenameFromZipDirAndDeleteOtherFiles(unzipDir);
         }
 
         switch (FilenameUtils.getExtension(this.filename).toLowerCase()) {
             case "asc":
                 coordinateReferenceSystem = ConvertToGeoTiffAndGetCrs();
-                gisType = GisType.TIF;
+                gisType = GisType.ASC;
                 break;
 
             case "tif":
@@ -83,45 +82,46 @@ public class GisValidator {
         }
     }
 
-    private String getFilenameFromZipDir(String zipDirectory) throws IOException {
-        AtomicReference<String> filename = new AtomicReference<>();
-
+    private void setFilenameFromZipDirAndDeleteOtherFiles(String zipDirectory) throws IOException {
         try (Stream<Path> paths = Files.list(Paths.get(zipDirectory))) {
             paths.forEach(path -> {
-                File file = path.toFile();
-                String name = file.getName();
-
-                switch (FilenameUtils.getExtension(name).toLowerCase()) {
+                switch (FilenameUtils.getExtension(path.toString()).toLowerCase()) {
                     case "asc":
                     case "tif":
                     case "shp":
-                        filename.set(zipDirectory + FilenameUtils.getName(name));
-                        return;
+                        filename = path.toString();
+                        break;
+                    // Timeseries file
+                    case "csv":
+                        if (timeseriesFilename != null) {
+                            System.out.println("Warning, multiple timeseries files detected! The first one was chosen.");
+                        } else {
+                            timeseriesFilename = path.toString();
+                        }
+                        break;
                     // all files a ShapeFile can contain.
-                    case "shx":
-                    case "dbf":
-                    case "prj":
-                    case "sbn":
-                    case "sbx":
-                    case "fbn":
-                    case "fbx":
                     case "ain":
                     case "aih":
+                    case "atx":
+                    case "cpg":
+                    case "dbf":
+                    case "fbn":
+                    case "fbx":
                     case "ixs":
                     case "mxs":
-                    case "atx":
-                    case "xml":
-                    case "cpg":
+                    case "prj":
                     case "qix":
                     case "qpj":
+                    case "sbn":
+                    case "sbx":
+                    case "shx":
+                    case "xml":
                         break;
                     default:
-                        deleteFile(zipDirectory + FilenameUtils.getName(name));
+                        deleteFile(path.toString());
                 }
             });
         }
-
-        return filename.get();
     }
 
     private CoordinateReferenceSystem ConvertToGeoTiffAndGetCrs() throws IOException, FactoryException {
@@ -188,6 +188,7 @@ public class GisValidator {
             System.out.println("Deleting: " + filename);
             FileUtils.forceDelete(new File(filename));
         } catch (IOException e) {
+            System.out.println("Failed to delete file: " + filename);
             e.printStackTrace();
         }
     }
@@ -202,6 +203,10 @@ public class GisValidator {
 
     public String getFilename() {
         return filename;
+    }
+
+    public String getTimeseriesFilename() {
+        return timeseriesFilename;
     }
 
     public double[] getTopRightBound() {

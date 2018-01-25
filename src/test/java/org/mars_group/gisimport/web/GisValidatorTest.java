@@ -1,6 +1,7 @@
 package org.mars_group.gisimport.web;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,7 +48,8 @@ public class GisValidatorTest {
             "shapefileDirectory.zip",
             "shapefileCapitalExtension.ZIP",
             "shapefileOtherFileInside.zip",
-            "shapefile_no_crs.zip"
+            "shapefile_no_crs.zip",
+            "shapefile_csv.zip"
     ));
 
     @BeforeClass
@@ -131,6 +133,11 @@ public class GisValidatorTest {
             assertTrue(crs.getName().toString().equals("Geographic")
                     || crs.getName().toString().equals("EPSG:WGS 84"));
             assertTrue(gisValidator.getShpBasename().equals("pop_pnt"));
+
+            if (filename.equals("shapefile_csv.zip")) {
+                String csvFilename = FilenameUtils.getPath(filename) + File.separator + "ipcc_precipitation_gis.csv";
+                assertTrue(new File(csvFilename).exists());
+            }
 
         } catch (IOException | GisValidationException | FactoryException e) {
             e.printStackTrace();
