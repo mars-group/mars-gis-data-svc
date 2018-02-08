@@ -181,7 +181,7 @@ public class GeoServerImport {
     }
 
     private String importTimeseriesData(String filename, String title) throws FileNotFoundException, GisImportException {
-        if (filename.length() < 1) {
+        if (filename == null || filename.length() < 1) {
             return null;
         }
 
