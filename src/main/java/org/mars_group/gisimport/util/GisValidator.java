@@ -124,11 +124,17 @@ public class GisValidator {
         }
     }
 
-    private CoordinateReferenceSystem ConvertToGeoTiffAndGetCrs() throws IOException, FactoryException {
+    private CoordinateReferenceSystem ConvertToGeoTiffAndGetCrs() throws FactoryException, IOException, GisValidationException {
         ArcGridReader reader;
         Hints hints = new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode("EPSG:4326"));
         reader = new ArcGridReader(new File(filename), hints);
-        GridCoverage2D coverage = reader.read(null);
+
+        GridCoverage2D coverage;
+        try {
+            coverage = reader.read(null);
+        } catch (IllegalArgumentException e) {
+            throw new GisValidationException("Failed to parse input file, make sure it is valid!");
+        }
 
         filename = FilenameUtils.getPath(filename) + File.separator + FilenameUtils.getBaseName(filename) + ".tif";
 

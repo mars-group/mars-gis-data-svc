@@ -45,10 +45,8 @@ class FileController {
             try {
                 geoServerImport.deleteWorkspace(dataId);
             } catch (GisImportException e1) {
-                System.out.println(e1.getMessage() + " " +
-                        "If it failed before the workspace was created, this is normal.");
+                e1.printStackTrace();
             }
-
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         } finally {
             geoServerImport.deleteDirectoryOnDisk();

@@ -145,6 +145,10 @@ public class GeoServerImport {
     }
 
     public void deleteWorkspace(String dataId) throws GisImportException {
+        if (publisher == null) {
+            return;
+        }
+
         if (!publisher.removeWorkspace(dataId, true)) {
             throw new GisImportException("Deleting workspace for: " + dataId + " failed!");
         }
