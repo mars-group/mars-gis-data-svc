@@ -1,3 +1,9 @@
 spring:
   application:
     name: gisimport
+  http:
+    multipart:
+      max-file-size: 2048Mb
+      maxRequestSize: 2048Mb
+  profiles:
+    active: prod
