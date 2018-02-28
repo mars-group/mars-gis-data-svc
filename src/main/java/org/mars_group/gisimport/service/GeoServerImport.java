@@ -5,6 +5,11 @@ import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import it.geosolutions.geoserver.rest.encoder.GSResourceEncoder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.geotools.referencing.CRS;
 import org.mars_group.core.ImportState;
 import org.mars_group.gisimport.exceptions.GisImportException;
@@ -16,17 +21,14 @@ import org.mars_group.metadataclient.MetadataClient;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.*;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.util.FileCopyUtils;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,6 +47,8 @@ public class GeoServerImport {
     private String specificUploadDir;
     private String filename;
 
+    private final String fileServiceUrl = "http://file-svc/files/";
+
     @Autowired
     public GeoServerImport(RestTemplate restTemplate, GeoServerController geoServerController,
                            GeoServerExport geoServerExport) {
@@ -60,8 +64,7 @@ public class GeoServerImport {
         this.dataId = dataId;
         this.filename = filename;
 
-        String uri = "http://file-svc/files/";
-        ClientHttpResponse response = restTemplate.execute(uri + dataId, HttpMethod.GET, null, res -> res);
+        ClientHttpResponse response = restTemplate.execute(fileServiceUrl + dataId, HttpMethod.GET, null, res -> res);
 
         saveFileToDisk(response.getBody(), filename);
     }
@@ -73,7 +76,6 @@ public class GeoServerImport {
         assertTrue(new File(specificUploadDir).mkdir());
 
         File f = new File(specificUploadDir + File.separator + filename);
-        System.out.println("File saved to: " + f.getPath());
         BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(f));
         FileCopyUtils.copy(file, stream);
         stream.close();
@@ -124,7 +126,7 @@ public class GeoServerImport {
                 importSuccess = publisher.publishShp(dataId, "Webui_Vector", dataName, file, crsCode,
                         "default_point");
 
-                String timeseriesDataId = importTimeseriesData(gisValidator.getTimeseriesFilename(), title);
+                String timeseriesDataId = importTimeseriesData(gisValidator.getTimeseriesFilename());
                 if (timeseriesDataId != null) {
                     additionalTypeSpecificData.put("timeseriesDataId", timeseriesDataId);
                 }
@@ -184,41 +186,51 @@ public class GeoServerImport {
         return additionalTypeSpecificData;
     }
 
-    private String importTimeseriesData(String filename, String title) throws FileNotFoundException, GisImportException {
+    private String importTimeseriesData(String filename) throws IOException, GisImportException {
         if (filename == null || filename.length() < 1) {
             return null;
         }
-
-        System.out.println("Starting timeseries import: " + filename);
 
         if (!new File(filename).exists()) {
             throw new FileNotFoundException("File does not exist: " + filename);
         }
 
-        MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<>();
-        parameters.add("file", new FileSystemResource(filename));
-        parameters.add("privacy", "PUBLIC");
-        parameters.add("dataType", "RAW");
-        parameters.add("projectId", "1");
-        parameters.add("userId", "1");
-        parameters.add("title", title);
+        System.out.println("Starting timeseries import: " + filename);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-        headers.setAccept(Collections.singletonList(MediaType.TEXT_PLAIN));
+        HttpPost uploadFile = new HttpPost(fileServiceUrl);
 
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(parameters, headers);
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        builder.addTextBody("privacy", "PUBLIC");
+        builder.addTextBody("dataType", "RAW");
+        builder.addTextBody("projectId", "1"); // TODO: set real one
+        builder.addTextBody("userId", "1"); // TODO: set real one
+        builder.addTextBody("title", FilenameUtils.getBaseName(filename) + ".csv");
 
-        String url = "http://file-svc/files";
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+        File f = new File(filename);
+        builder.addBinaryBody("file", new FileInputStream(f), ContentType.APPLICATION_OCTET_STREAM, f.getName());
 
-        System.out.println("response: " + response);
+        uploadFile.setEntity(builder.build());
 
-        if (response.getStatusCode() != HttpStatus.OK) {
-            throw new GisImportException("Error during timeseries import: " + response.getBody());
+        CloseableHttpResponse response;
+        try {
+            response = HttpClients.createDefault().execute(uploadFile);
+        } catch (HttpClientErrorException e) {
+            throw new GisImportException(e.getMessage());
         }
 
-        return response.getBody();
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+
+        StringBuilder result = new StringBuilder();
+        String line;
+        while ((line = bufferedReader.readLine()) != null) {
+            result.append(line);
+        }
+
+        if (response.getStatusLine().getStatusCode() != 200) {
+            throw new GisImportException("Error during timeseries import: " + result);
+        }
+
+        return result.toString();
     }
 
     private void writeMetadata(GisType gisType, Map<String, Object> additionalTypeSpecificData) {
