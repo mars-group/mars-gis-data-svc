@@ -51,10 +51,6 @@ deployBeta:
     - docker login -u $NEXUS_USER -p $NEXUS_PW $DOCKER_REGISTRY
     - docker build -t $SERVIE_NAME:beta .
     - docker tag $SERVIE_NAME:beta $DOCKER_REGISTRY/$SERVIE_NAME:beta
-    - docker tag $SERVIE_NAME:beta $DOCKER_REGISTRY/$SERVIE_NAME:$CI_PIPELINE_ID
-    - docker tag $SERVIE_NAME:beta $DOCKER_REGISTRY/$SERVIE_NAME:$CI_COMMIT_SHA
     - docker push $DOCKER_REGISTRY/$SERVIE_NAME:beta
-    - docker push $DOCKER_REGISTRY/$SERVIE_NAME:$CI_PIPELINE_ID
-    - docker push $DOCKER_REGISTRY/$SERVIE_NAME:$CI_COMMIT_SHA
   tags:
     - k8s
