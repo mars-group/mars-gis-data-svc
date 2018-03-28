@@ -10,14 +10,11 @@ variables:
   MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
 
 cache:
-  paths:
-    - .m2/repository
-  # keep cache across branch
-  key: "$CI_JOB_REF_NAME"
+  untracked: true
 
-build-and-test:
+buildAndTest:
   stage: build-test
-  image: $DOCKER_REGISTRY/maven:3-jdk-8-alpine
+  image: $DOCKER_REGISTRY/mars/maven-gdal
   script:
   - mvn $MAVEN_CLI_OPTS clean package
   artifacts:
@@ -26,7 +23,7 @@ build-and-test:
   tags:
     - k8s
 
-deploy:
+deployStable:
   stage: deploy
   services:
     - $DOCKER_REGISTRY/docker:stable-dind
@@ -35,11 +32,29 @@ deploy:
   script:
     - docker login -u $NEXUS_USER -p $NEXUS_PW $DOCKER_REGISTRY
     - docker build -t $SERVIE_NAME:latest .
-    - docker tag $SERVIE_NAME:latest $DOCKER_REGISTRY/$SERVIE_NAME:$CI_PIPELINE_ID
     - docker tag $SERVIE_NAME:latest $DOCKER_REGISTRY/$SERVIE_NAME:latest
+    - docker tag $SERVIE_NAME:latest $DOCKER_REGISTRY/$SERVIE_NAME:$CI_PIPELINE_ID
     - docker tag $SERVIE_NAME:latest $DOCKER_REGISTRY/$SERVIE_NAME:$CI_COMMIT_SHA
-    - docker push $DOCKER_REGISTRY/$SERVIE_NAME:$CI_PIPELINE_ID
     - docker push $DOCKER_REGISTRY/$SERVIE_NAME:latest
+    - docker push $DOCKER_REGISTRY/$SERVIE_NAME:$CI_PIPELINE_ID
+    - docker push $DOCKER_REGISTRY/$SERVIE_NAME:$CI_COMMIT_SHA
+  tags:
+    - k8s
+
+deployBeta:
+  stage: deploy
+  services:
+    - $DOCKER_REGISTRY/docker:stable-dind
+  except:
+    - master
+  script:
+    - docker login -u $NEXUS_USER -p $NEXUS_PW $DOCKER_REGISTRY
+    - docker build -t $SERVIE_NAME:beta .
+    - docker tag $SERVIE_NAME:beta $DOCKER_REGISTRY/$SERVIE_NAME:beta
+    - docker tag $SERVIE_NAME:beta $DOCKER_REGISTRY/$SERVIE_NAME:$CI_PIPELINE_ID
+    - docker tag $SERVIE_NAME:beta $DOCKER_REGISTRY/$SERVIE_NAME:$CI_COMMIT_SHA
+    - docker push $DOCKER_REGISTRY/$SERVIE_NAME:beta
+    - docker push $DOCKER_REGISTRY/$SERVIE_NAME:$CI_PIPELINE_ID
     - docker push $DOCKER_REGISTRY/$SERVIE_NAME:$CI_COMMIT_SHA
   tags:
     - k8s

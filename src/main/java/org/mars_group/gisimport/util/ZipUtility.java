@@ -5,16 +5,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.springframework.util.Assert;
 
 import java.io.*;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.FileTime;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
-public class ZipUtility {
+class ZipUtility {
     private static final byte[] buffer = new byte[4096];
 
     /**
@@ -58,35 +52,6 @@ public class ZipUtility {
             bos.write(buffer, 0, read);
         }
         bos.close();
-    }
-
-    public static void createZip(String dirName, String zipFilename) throws IOException {
-        try (ZipOutputStream zipStream = new ZipOutputStream(new FileOutputStream(zipFilename))) {
-            try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(Paths.get(dirName))) {
-                for (Path path : dirStream) {
-                    if (!path.toString().equals(zipFilename)) {
-                        addToZipFile(path, zipStream);
-                    }
-                }
-            }
-        }
-    }
-
-    private static void addToZipFile(Path file, ZipOutputStream zipStream) throws IOException {
-        String inputFileName = file.toFile().getPath();
-
-        try (FileInputStream inputStream = new FileInputStream(inputFileName)) {
-            ZipEntry entry = new ZipEntry(file.toFile().getName());
-            entry.setCreationTime(FileTime.fromMillis(file.toFile().lastModified()));
-            zipStream.putNextEntry(entry);
-
-            byte[] readBuffer = new byte[2048];
-            int amountRead;
-
-            while ((amountRead = inputStream.read(readBuffer)) > 0) {
-                zipStream.write(readBuffer, 0, amountRead);
-            }
-        }
     }
 
 }

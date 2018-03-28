@@ -1,9 +1,9 @@
 package org.mars_group.gisimport.util;
 
 public enum GisType {
-    ASC("ASCIIGRID"), TIF("GEOTIFF"), SHP("SHAPEFILE");
+    ASC("ASCIIGRID"), TIF("GEOTIFF"), GJSON("GEOJSON"), SHP("SHAPEFILE");
 
-    private String name;
+    private final String name;
 
     GisType(String name) {
         this.name = name;

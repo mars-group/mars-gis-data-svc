@@ -7,3 +7,5 @@ spring:
       maxRequestSize: 2048Mb
   profiles:
     active: prod
+
+file-svc-url: http://file-svc/files
