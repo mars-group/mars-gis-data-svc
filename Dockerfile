@@ -1,4 +1,7 @@
 FROM nexus.informatik.haw-hamburg.de/openjdk:8-jre-alpine
+
+RUN apk add --no-cache gdal --repository http://nl.alpinelinux.org/alpine/edge/testing
+
 ADD target/gis-data-svc-*.jar /app/app.jar
 
 EXPOSE 8080

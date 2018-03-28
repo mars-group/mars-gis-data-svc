@@ -7,8 +7,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mars_group.gisimport.exceptions.GisValidationException;
 import org.mars_group.gisimport.util.GisValidator;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,14 +25,12 @@ public class GisValidatorTest {
     private final static String resourceDir = "src" + File.separator + "test" + File.separator + "resources";
     private final static String uploadDir = "upload-dir";
 
-    private final ArrayList<String> asciiFiles = new ArrayList<>(Arrays.asList(
+    private final ArrayList<String> rasterFiles = new ArrayList<>(Arrays.asList(
             "ascii_grid.asc",
             "ascii_grid.period.asc",
             "ascii_grid space.asc",
             "ascii_grid.zip",
-            "ascii_grid.period.zip"));
-
-    private final ArrayList<String> geoTiffFiles = new ArrayList<>(Arrays.asList(
+            "ascii_grid.period.zip",
             "geotiff.tif",
             "geotiff.zip",
             "geotiff.period.tif",
@@ -42,7 +38,8 @@ public class GisValidatorTest {
             "geotiff.period.zip"
     ));
 
-    private final ArrayList<String> shapeFiles = new ArrayList<>(Arrays.asList(
+    private final ArrayList<String> vectorFiles = new ArrayList<>(Arrays.asList(
+            "geoJson.json",
             "shapefile.zip",
             "shapefile space.zip",
             "shapefileDirectory.zip",
@@ -69,77 +66,45 @@ public class GisValidatorTest {
     }
 
     @Test
-    public void asciiGridTest() {
-        for (String filename : asciiFiles) {
-            asciiGridTest(filename);
+    public void rasterTest() {
+        for (String filename : rasterFiles) {
+            rasterTest(filename);
         }
     }
 
     @Test
-    public void geoTiffTest() {
-        for (String filename : geoTiffFiles) {
-            geoTiffTest(filename);
+    public void vectorTest() {
+        for (String filename : vectorFiles) {
+            vectorTest(filename);
         }
     }
 
-    @Test
-    public void shpTest() {
-        for (String filename : shapeFiles) {
-            shapeFileTest(filename);
-        }
-    }
-
-    private void asciiGridTest(String filename) {
+    private void rasterTest(String filename) {
         filename = copyFileToUploadDir(filename);
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
 
         try {
-            GisValidator gisValidator = new GisValidator(filename);
-
-            CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
-            assertTrue(crs.getName().toString().equals("EPSG:WGS 84"));
-
-        } catch (IOException | GisValidationException | FactoryException e) {
+            GisValidator gisValidator = new GisValidator(filename, filename);
+        } catch (IOException | GisValidationException e) {
             e.printStackTrace();
             fail();
         }
     }
 
-    private void geoTiffTest(String filename) {
+    private void vectorTest(String filename) {
         filename = copyFileToUploadDir(filename);
+        System.out.println(filename);
         assertTrue(filename + " doesn't exists!", new File(filename).exists());
 
         try {
-            GisValidator gisValidator = new GisValidator(filename);
-
-            CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
-            assertTrue(crs.getName().toString().equals("EPSG:NAD27 / UTM zone 13N")
-                    || crs.getName().toString().equals("EPSG:WGS 84"));
-
-        } catch (IOException | GisValidationException | FactoryException e) {
-            e.printStackTrace();
-            fail();
-        }
-    }
-
-    private void shapeFileTest(String filename) {
-        filename = copyFileToUploadDir(filename);
-        assertTrue(filename + " doesn't exists!", new File(filename).exists());
-
-        try {
-            GisValidator gisValidator = new GisValidator(filename);
-
-            CoordinateReferenceSystem crs = gisValidator.getCoordinateReferenceSystem();
-            assertTrue(crs.getName().toString().equals("Geographic")
-                    || crs.getName().toString().equals("EPSG:WGS 84"));
-            assertTrue(gisValidator.getShpBasename().equals("pop_pnt"));
+            GisValidator gisValidator = new GisValidator(filename, filename);
 
             if (filename.equals("shapefile_csv.zip")) {
                 String csvFilename = FilenameUtils.getPath(filename) + File.separator + "ipcc_precipitation_gis.csv";
                 assertTrue(new File(csvFilename).exists());
             }
 
-        } catch (IOException | GisValidationException | FactoryException e) {
+        } catch (IOException | GisValidationException e) {
             e.printStackTrace();
             fail();
         }

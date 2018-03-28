@@ -2,51 +2,29 @@ package org.mars_group.gisimport.util;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.data.DataStore;
-import org.geotools.data.DataStoreFinder;
-import org.geotools.data.FeatureSource;
-import org.geotools.factory.Hints;
-import org.geotools.gce.arcgrid.ArcGridReader;
-import org.geotools.gce.geotiff.GeoTiffReader;
-import org.geotools.gce.geotiff.GeoTiffWriter;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.CRS;
 import org.mars_group.gisimport.exceptions.GisValidationException;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import java.awt.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Stream;
 
 public class GisValidator {
+    private GisType originalGisType;
     private GisType gisType;
-    private String shpBasename;
     private String filename;
+    private String title;
     private String timeseriesFilename;
-    private double[] topRightBound;
-    private double[] bottomLeftBound;
-    private CoordinateReferenceSystem coordinateReferenceSystem;
 
     /**
      * Validates your GIS file
      *
      * @param filename Path to the file. This has to be either .zip .tif or .asc
      */
-    public GisValidator(String filename) throws IOException, FactoryException, GisValidationException {
+    public GisValidator(String filename, String title) throws IOException, GisValidationException {
         this.filename = filename;
-
-        topRightBound = new double[2];
-        bottomLeftBound = new double[2];
+        this.title = title;
 
         if (FilenameUtils.getExtension(this.filename).toLowerCase().equals("zip")) {
             String unzipDir = FilenameUtils.getPath(this.filename);
@@ -57,24 +35,26 @@ public class GisValidator {
 
         switch (FilenameUtils.getExtension(this.filename).toLowerCase()) {
             case "asc":
-                coordinateReferenceSystem = ConvertToGeoTiffAndGetCrs();
-                gisType = GisType.ASC;
+                originalGisType = GisType.ASC;
+                gisType = originalGisType;
                 break;
 
             case "tif":
-                gisType = GisType.TIF;
-                coordinateReferenceSystem = getCrsFromGeoTiff();
+                originalGisType = GisType.TIF;
+                gisType = originalGisType;
+                convertToAsciiGrid();
+                break;
+
+            case "json":
+            case "geojson":
+                originalGisType = GisType.GJSON;
+                gisType = originalGisType;
                 break;
 
             case "shp":
-                gisType = GisType.SHP;
-                coordinateReferenceSystem = getCrsFromShape();
-
-                String dirName = FilenameUtils.getPath(this.filename);
-                shpBasename = FilenameUtils.getBaseName(this.filename);
-                this.filename = dirName + shpBasename + ".zip";
-
-                ZipUtility.createZip(dirName, this.filename);
+                originalGisType = GisType.SHP;
+                gisType = originalGisType;
+                convertToGeoJson();
                 break;
 
             default:
@@ -124,71 +104,6 @@ public class GisValidator {
         }
     }
 
-    private CoordinateReferenceSystem ConvertToGeoTiffAndGetCrs() throws FactoryException, IOException, GisValidationException {
-        ArcGridReader reader;
-        Hints hints = new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode("EPSG:4326"));
-        reader = new ArcGridReader(new File(filename), hints);
-
-        GridCoverage2D coverage;
-        try {
-            coverage = reader.read(null);
-        } catch (IllegalArgumentException e) {
-            throw new GisValidationException("Failed to parse input file, make sure it is valid!");
-        }
-
-        filename = FilenameUtils.getPath(filename) + File.separator + FilenameUtils.getBaseName(filename) + ".tif";
-
-        GeoTiffWriter writer = new GeoTiffWriter(new File(filename));
-        writer.write(coverage, null);
-        writer.dispose();
-
-        setBounds(coverage.getGridGeometry().getEnvelope2D().getBounds());
-
-        return handleInvalidCrs(coverage.getCoordinateReferenceSystem2D());
-    }
-
-    private CoordinateReferenceSystem getCrsFromGeoTiff() throws IOException, FactoryException {
-        GridCoverage2D coverage = new GeoTiffReader(filename).read(null);
-
-        setBounds(coverage.getGridGeometry().getEnvelope2D().getBounds());
-
-        return handleInvalidCrs(coverage.getCoordinateReferenceSystem2D());
-    }
-
-    private CoordinateReferenceSystem getCrsFromShape() throws IOException, FactoryException {
-        Map<String, Object> map = new HashMap<>();
-
-        map.put("url", new File(filename).toURI().toURL());
-        DataStore dataStore = DataStoreFinder.getDataStore(map);
-
-        shpBasename = dataStore.getTypeNames()[0];
-        FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(shpBasename);
-
-        setBounds(source.getBounds());
-
-        return handleInvalidCrs(source.getInfo().getCRS());
-    }
-
-    private CoordinateReferenceSystem handleInvalidCrs(CoordinateReferenceSystem crs) throws FactoryException {
-        if (crs == null) {
-            crs = CRS.decode("EPSG:4326");
-        }
-
-        return crs;
-    }
-
-    private void setBounds(ReferencedEnvelope bounds) {
-        topRightBound = bounds.getUpperCorner().getCoordinate();
-        bottomLeftBound = bounds.getLowerCorner().getCoordinate();
-    }
-
-    private void setBounds(Rectangle bounds) {
-        topRightBound[0] = bounds.getMaxX();
-        topRightBound[1] = bounds.getMaxY();
-        bottomLeftBound[0] = bounds.getMinX();
-        bottomLeftBound[1] = bounds.getMinY();
-    }
-
     private void deleteFile(String filename) {
         try {
             System.out.println("Deleting: " + filename);
@@ -199,12 +114,74 @@ public class GisValidator {
         }
     }
 
-    public GisType getGisType() {
-        return gisType;
+    private void convertToAsciiGrid() throws IOException, GisValidationException {
+        if (!gisType.equals(GisType.TIF)) {
+            return;
+        }
+
+        System.out.println(title + ": Converting file to AsciiGrid ...");
+
+        String newFilename = FilenameUtils.getPath(filename) + FilenameUtils.getBaseName(filename) + ".asc";
+
+        convertFile(new String[]{
+                "gdal_translate", "-of", "AAIGrid", "-co", "force_cellsize=true", "-b", "1", filename, newFilename
+        });
+
+        filename = newFilename;
+        gisType = GisType.ASC;
     }
 
-    public String getShpBasename() {
-        return shpBasename;
+    private void convertToGeoJson() throws IOException, GisValidationException {
+        if (!gisType.equals(GisType.SHP)) {
+            return;
+        }
+
+        System.out.println(title + ": Converting file to GeoJSON ...");
+
+        String newFilename = FilenameUtils.getPath(filename) + FilenameUtils.getBaseName(filename) + ".json";
+
+        convertFile(new String[]{"ogr2ogr", "-f", "GeoJSON", newFilename, filename});
+
+        filename = newFilename;
+        gisType = GisType.GJSON;
+    }
+
+    // TODO: Delete old files
+    private void convertFile(String[] command) throws IOException, GisValidationException {
+        Process process = Runtime.getRuntime().exec(command);
+
+        try {
+            process.waitFor();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            throw new GisValidationException("File conversion failed. Error: " + e.getMessage());
+        }
+
+        if (process.exitValue() != 0) {
+            try (InputStream inputStream = process.getErrorStream()) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String s;
+                StringBuilder message = new StringBuilder();
+                while ((s = reader.readLine()) != null) {
+                    message.append(s);
+                }
+
+                throw new GisValidationException("Error converting file: " + message.toString());
+            }
+        }
+
+        if (!new File(command[command.length - 1]).exists()) {
+            throw new GisValidationException("The converted file does not exist!");
+        }
+    }
+
+    public GisType getOriginalGisType() {
+        return originalGisType;
+    }
+
+    public GisType getGisType() {
+        return gisType;
     }
 
     public String getFilename() {
@@ -213,18 +190,6 @@ public class GisValidator {
 
     public String getTimeseriesFilename() {
         return timeseriesFilename;
-    }
-
-    public double[] getTopRightBound() {
-        return topRightBound;
-    }
-
-    public double[] getBottomLeftBound() {
-        return bottomLeftBound;
-    }
-
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return coordinateReferenceSystem;
     }
 
 }
