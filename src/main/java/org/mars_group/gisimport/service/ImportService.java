@@ -88,9 +88,10 @@ public class ImportService {
         Map<String, Object> additionalTypeSpecificData = new HashMap<>();
 
         if (!originalGisType.equals(gisType)) {
-            additionalTypeSpecificData.put("originalType", originalGisType);
+            additionalTypeSpecificData.put("originalTitle", title);
+            additionalTypeSpecificData.put("originalType", originalGisType.getName());
 
-            importConvertedFile(gisValidator.getFilename(), title, gisType);
+            importConvertedFile(gisValidator.getFilename(), gisType);
         }
 
         if (originalGisType.equals(GisType.SHP)) {
@@ -105,7 +106,7 @@ public class ImportService {
         System.out.println(title + ": Import successful!");
     }
 
-    private void importConvertedFile(String filename, String title, GisType gisType) throws IOException, GisImportException {
+    private void importConvertedFile(String filename, GisType gisType) throws IOException, GisImportException {
         File file = new File(filename);
         if (!file.exists()) {
             throw new FileNotFoundException(filename + ": File does not exist!");
@@ -114,7 +115,7 @@ public class ImportService {
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         builder.addTextBody("dataId", dataId);
         builder.addTextBody("dataType", gisType.getName());
-        builder.addTextBody("title", title);
+        builder.addTextBody("title", FilenameUtils.getName(filename));
         builder.addBinaryBody("file", new FileInputStream(file), ContentType.APPLICATION_OCTET_STREAM, file.getName());
 
 
