@@ -179,10 +179,7 @@ public class ImportService {
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("type", gisType.getName());
         metadata.put("state", ImportState.FINISHED);
-
-        if (!additionalTypeSpecificData.isEmpty()) {
-            metadata.put("additionalTypeSpecificData", additionalTypeSpecificData);
-        }
+        metadata.put("additionalTypeSpecificData", additionalTypeSpecificData);
 
         metadataClient.updateMetadata(dataId, metadata);
     }
