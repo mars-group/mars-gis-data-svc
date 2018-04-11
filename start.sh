@@ -11,3 +11,4 @@ docker build -t ${DOCKER_REGISTRY}/${SERVICE_NAME}:dev -f Dockerfile_dev .
 docker push ${DOCKER_REGISTRY}/${SERVICE_NAME}:dev
 
 kubectl -n mars-mars-beta delete pod -l service=${SERVICE_NAME} --force
+#kubectl delete pod -l service=${SERVICE_NAME} --force

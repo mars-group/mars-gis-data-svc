@@ -146,7 +146,6 @@ public class GisValidator {
         gisType = GisType.GJSON;
     }
 
-    // TODO: Delete old files
     private void convertFile(String[] command) throws IOException, GisValidationException {
         Process process = Runtime.getRuntime().exec(command);
 

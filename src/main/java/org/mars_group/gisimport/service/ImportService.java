@@ -1,6 +1,5 @@
 package org.mars_group.gisimport.service;
 
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -9,6 +8,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.mars_group.core.ImportState;
+import org.mars_group.core.Metadata;
 import org.mars_group.gisimport.exceptions.GisImportException;
 import org.mars_group.gisimport.exceptions.GisValidationException;
 import org.mars_group.gisimport.util.GisType;
@@ -118,7 +118,6 @@ public class ImportService {
         builder.addTextBody("title", FilenameUtils.getName(filename));
         builder.addBinaryBody("file", new FileInputStream(file), ContentType.APPLICATION_OCTET_STREAM, file.getName());
 
-
         postRequest(fileServiceUrl + "/replace", builder);
     }
 
@@ -133,11 +132,13 @@ public class ImportService {
 
         System.out.println(title + ": Starting timeseries import ...");
 
+        Metadata metadata = metadataClient.getMetadata(dataId);
+
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        builder.addTextBody("privacy", "PUBLIC");
+        builder.addTextBody("privacy", metadata.getPrivacy().name());
         builder.addTextBody("dataType", "RAW");
-        builder.addTextBody("projectId", "1"); // TODO: set real one
-        builder.addTextBody("userId", "1"); // TODO: set real one
+        builder.addTextBody("projectId", metadata.getProjectId());
+        builder.addTextBody("userId", metadata.getUserId());
         builder.addTextBody("title", FilenameUtils.getBaseName(filename) + ".csv");
 
         File file = new File(filename);
@@ -182,14 +183,6 @@ public class ImportService {
         if (!additionalTypeSpecificData.isEmpty()) {
             metadata.put("additionalTypeSpecificData", additionalTypeSpecificData);
         }
-
-//        for(String key :metadata.keySet()) {
-//            System.out.println(key + ": " + metadata.get(key));
-//        }
-//
-//        for (String key : additionalTypeSpecificData.keySet()) {
-//            System.out.println(key + ": " + additionalTypeSpecificData.get(key));
-//        }
 
         metadataClient.updateMetadata(dataId, metadata);
     }
